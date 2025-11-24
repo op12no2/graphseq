@@ -394,10 +394,15 @@
         try {
           this.access = await navigator.requestMIDIAccess();
           
-          // Find loopMIDI port (or any virtual MIDI port)
+          // Find virtual MIDI port (loopMIDI on Windows, IAC Driver on Mac, or any virtual port)
           for (const output of this.access.outputs.values()) {
-            if (output.name.toLowerCase().includes('loopmidi') || 
-                output.name.toLowerCase().includes('loop midi')) {
+            const name = output.name.toLowerCase();
+            // Check for common virtual MIDI ports
+            if (name.includes('loopmidi') || 
+                name.includes('loop midi') ||
+                name.includes('iac') ||
+                name.includes('bus') ||
+                name.includes('virtual')) {
               this.output = output;
               this.connected = true;
               console.log('Connected to MIDI port:', output.name);
@@ -405,7 +410,15 @@
             }
           }
           
-          console.warn('loopMIDI port not found');
+          // If no virtual port found, try to use the first available output
+          if (this.access.outputs.size > 0) {
+            this.output = this.access.outputs.values().next().value;
+            this.connected = true;
+            console.log('Connected to MIDI port:', this.output.name);
+            return true;
+          }
+          
+          console.warn('No MIDI ports found');
           return false;
         }
         catch (err) {
