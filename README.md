@@ -3,7 +3,7 @@
 An agent based MIDI graph sequencer. Work in progress.  
 
 - Left click: drop a note. Notes have a right-click context menu.
-- Ctrl + click on a note and drag: link notes directionally. Links have a right-click context menu. Notes can point at eachother. 
+- Ctrl + click on a note and drag to another note: link notes directionally. Links have a right-click context menu. Notes can point at eachother. 
 - Mouse wheel: zoom in/out.
 - Shift + click and drag: scroll sequencer universe.
 
@@ -22,4 +22,5 @@ Todo:-
 - Meta rules to modify rules.
 - Universe rules.
 - Save/Open.
+- Physics up/down left/right mean something.
 - Endless... :)  
