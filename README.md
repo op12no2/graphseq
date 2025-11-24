@@ -13,6 +13,7 @@ Very early days.
 
 Todo:-
 
+- Note off!!!!
 - Select network areas, delete, duplicate, etc.
 - Extend note properties to have an array of pitches (so the graphs don't get crazy) with rendering options (random, all, seq, length, etc).
 - Note rules 0(trigger, action)n. Including adding new notes and links etc. And editing self/other note properties.
