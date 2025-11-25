@@ -1,4 +1,4 @@
-# Agent based MIDI graph sequencer
+# MIDI graph sequencer
 
   
 
