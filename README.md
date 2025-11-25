@@ -14,6 +14,6 @@ On reaching a note, agents replicate themselves if there are any connected ```Al
 
 This is the default behaviour. The next step is to add rule sets that are evaluated and actioned; which will include self/neighbour note/link creation/modification and movement.
 
-Buglets: link selection when 2 notes are interconnected.
+Buglets: Lots!
 
 
