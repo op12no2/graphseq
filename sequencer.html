@@ -13,10 +13,257 @@
       overflow: hidden;
     }
     
-    #container {
+    #properties-sidebar {
       position: fixed;
       top: 40px;
       left: 0;
+      bottom: 0;
+      width: 240px;
+      background: #242424;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+      padding: 16px;
+      box-sizing: border-box;
+      z-index: 50;
+    }
+    
+    #properties-sidebar h3 {
+      margin: 0 0 12px 0;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+    }
+    
+    .property-section {
+      margin-bottom: 20px;
+    }
+    
+    .property-label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .note-btn {
+      padding: 8px 4px;
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 3px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 11px;
+      text-align: center;
+      transition: all 0.1s;
+    }
+    
+    .note-btn:hover {
+      background: #333;
+      border-color: #4a4a4a;
+    }
+    
+    .note-btn.selected {
+      background: #4a4a4a;
+      border-color: #5a5a5a;
+      color: #fff;
+    }
+    
+    .octave-selector {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    
+    .octave-btn {
+      flex: 1;
+      padding: 6px;
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 3px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 10px;
+      text-align: center;
+    }
+    
+    .octave-btn:hover {
+      background: #333;
+    }
+    
+    .octave-btn.selected {
+      background: #4a4a4a;
+      border-color: #5a5a5a;
+      color: #fff;
+    }
+    
+    .color-palette-inline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      max-width: 120px;
+      margin: 0 auto;
+    }
+    
+    .color-swatch-inline {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.1s;
+    }
+    
+    .color-swatch-inline:hover {
+      transform: scale(1.15);
+    }
+    
+    .color-swatch-inline.selected {
+      border-color: #fff;
+      box-shadow: 0 0 6px rgba(255,255,255,0.4);
+    }
+    
+    .property-slider {
+      width: 100%;
+      margin-top: 4px;
+    }
+    
+    .color-slider {
+      width: 100%;
+      margin-top: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 4px;
+      outline: none;
+      background: linear-gradient(to right,
+        #ff6b6b, #ee5a6f, #c44569, #a8336a,
+        #4ecdc4, #45b7d1, #5f9ef7, #3867d6,
+        #feca57, #ff9ff3, #fd79a8, #a29bfe,
+        #26de81, #20bf6b, #95e1d3, #888888
+      );
+    }
+    
+    .color-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #333;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .color-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #333;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .color-preview {
+      width: 100%;
+      height: 24px;
+      margin-top: 8px;
+      border-radius: 4px;
+      border: 1px solid #444;
+    }
+    
+    .property-select {
+      width: 100%;
+      padding: 6px 8px;
+      background: #2a2a2a;
+      color: #ccc;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    
+    .property-select:hover {
+      border-color: #666;
+    }
+    
+    .property-select:focus {
+      outline: none;
+      border-color: #888;
+    }
+    
+    .property-button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      background: #3a3a3a;
+      color: #ccc;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+    
+    .property-button:hover {
+      background: #4a4a4a;
+      border-color: #666;
+    }
+    
+    .property-button-warning {
+      background: #664400;
+      border-color: #886600;
+    }
+    
+    .property-button-warning:hover {
+      background: #885500;
+      border-color: #aa7700;
+    }
+    
+    .property-button-danger {
+      background: #662222;
+      border-color: #883333;
+    }
+    
+    .property-button-danger:hover {
+      background: #883333;
+      border-color: #aa4444;
+    }
+    
+    .property-value {
+      font-size: 11px;
+      color: #ccc;
+      margin-top: 4px;
+    }
+    
+    .property-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    
+    .property-checkbox input {
+      cursor: pointer;
+    }
+    
+    #container {
+      position: fixed;
+      top: 40px;
+      left: 240px;
       right: 0;
       bottom: 0;
       display: flex;
@@ -34,32 +281,6 @@
       font-size: 12px;
       color: #888;
       z-index: 100;
-    }
-    
-    #system-settings-btn {
-      position: fixed;
-      top: 4px;
-      right: 10px;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      background: #2a2a2a;
-      border: 1px solid #444;
-      border-radius: 4px;
-      color: #888;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    
-    #system-settings-btn:hover {
-      background: #3a3a3a;
-      color: #aaa;
-      border-color: #555;
     }
     
     #transport {
@@ -93,6 +314,32 @@
       user-select: none;
     }
     
+    #beat-counter {
+      position: fixed;
+      top: 4px;
+      left: 50%;
+      transform: translateX(100px);
+      height: 32px;
+      padding: 0 12px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #888;
+      font-size: 14px;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 100;
+      user-select: none;
+    }
+    
+    #beat-value {
+      color: #4ecdc4;
+      min-width: 50px;
+      text-align: center;
+    }
+    
     #bpm-display:hover {
       border-color: #555;
       color: #aaa;
@@ -104,79 +351,15 @@
       text-align: right;
     }
     
-    #edit-mode-btn {
-      position: fixed;
-      top: 4px;
-      right: 46px;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      background: #2a2a2a;
-      border: 1px solid #444;
-      border-radius: 4px;
-      color: #888;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    
-    #edit-mode-btn:hover {
-      background: #3a3a3a;
-      color: #aaa;
-      border-color: #555;
-    }
-    
-    #edit-mode-btn.active {
-      background: #4a6a8a;
-      border-color: #5a7a9a;
-      color: #fff;
-    }
-    
-    #eraser-mode-btn {
-      position: fixed;
-      top: 4px;
-      right: 82px;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      background: #2a2a2a;
-      border: 1px solid #444;
-      border-radius: 4px;
-      color: #888;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    
-    #eraser-mode-btn:hover {
-      background: #3a3a3a;
-      color: #aaa;
-      border-color: #555;
-    }
-    
-    #eraser-mode-btn.active {
-      background: #8a4a4a;
-      border-color: #9a5a5a;
-      color: #fff;
-    }
-    
     .transport-btn {
       width: 32px;
       height: 32px;
       padding: 0;
-      background: #2a2a2a;
-      border: 1px solid #444;
+      background: transparent;
+      border: none;
       border-radius: 4px;
       color: #888;
-      font-size: 14px;
+      font-size: 16px;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
@@ -185,20 +368,22 @@
     }
     
     .transport-btn:hover {
-      background: #3a3a3a;
-      color: #aaa;
-      border-color: #555;
+      color: #ddd;
+      background: rgba(255, 255, 255, 0.05);
     }
     
     .transport-btn.active {
-      background: #4a6a8a;
-      border-color: #5a7a9a;
-      color: #fff;
+      color: #4ecdc4;
+      background: rgba(78, 205, 196, 0.1);
     }
     
     .transport-btn:disabled {
-      opacity: 0.3;
+      color: #444;
       cursor: not-allowed;
+    }
+    
+    .transport-btn:disabled:hover {
+      background: transparent;
     }
     
     #status-text {
@@ -322,6 +507,32 @@
       margin-bottom: 12px;
     }
     
+    .color-palette {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    
+    .color-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid #333;
+      transition: all 0.2s;
+    }
+    
+    .color-swatch:hover {
+      transform: scale(1.1);
+      border-color: #666;
+    }
+    
+    .color-swatch.selected {
+      border-color: #fff;
+      border-width: 3px;
+    }
+    
     .modal-row label {
       flex: 1;
       color: #ccc;
@@ -370,6 +581,16 @@
   </style>
 </head>
 <body>
+  <!-- Properties Sidebar -->
+  <div id="properties-sidebar">
+    <div id="properties-content">
+      <h3>Properties</h3>
+      <div class="property-section">
+        <div class="property-label">Nothing Selected</div>
+      </div>
+    </div>
+  </div>
+  
   <div id="container">
     <div id="midi-status">
       <div class="status-light disconnected" id="status-light" title="Click to retry MIDI connection"></div>
@@ -384,9 +605,9 @@
       <button class="transport-btn" id="pause-btn" title="Pause" disabled>⏸</button>
       <button class="transport-btn" id="stop-btn" title="Stop" disabled>⏹</button>
     </div>
-    <button id="eraser-mode-btn" title="Eraser Mode (Click notes to delete)">⌫</button>
-    <button id="edit-mode-btn" class="active" title="Edit Mode (On/Off)">🔓</button>
-    <button id="system-settings-btn">⚙</button>
+    <div id="beat-counter">
+      <span id="beat-value">1:1:1</span>
+    </div>
     <canvas id="canvas"></canvas>
   </div>
   
@@ -394,7 +615,28 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     
+    const gridSpacing = 30; // Visual grid spacing - use zoom to adjust scale
     const noteRadius = 8;
+    
+    // Theme definitions
+    const themes = {
+      dark: {
+        name: 'Dark',
+        backgroundColor: '#0a0a0a',
+        gridColor: '#1a1a1a',
+        linkColor: '#cccccc',
+        teleportLinkColor: '#feca57' // Yellow for teleport links
+      }
+      // More themes can be added here later
+    };
+    
+    // Curated color palette - 16 colors that look good on dark background
+    const colorPalette = [
+      '#ff6b6b', '#ee5a6f', '#c44569', '#a8336a', // Reds/Pinks
+      '#4ecdc4', '#45b7d1', '#5f9ef7', '#3867d6', // Cyans/Blues
+      '#feca57', '#ff9ff3', '#fd79a8', '#a29bfe', // Yellows/Purples
+      '#26de81', '#20bf6b', '#95e1d3', '#888888'  // Greens/Gray
+    ];
     
     const notes = new Map(); // key: "x,y" -> note object
     
@@ -408,6 +650,12 @@
     let lastMouseX = 0;
     let lastMouseY = 0;
     
+    // Zoom state
+    let zooming = false;
+    let zoomStartY = 0;
+    let zoomStartX = 0;
+    let zoomStartValue = 1.0;
+    
     // Note dragging state
     let draggedNote = null;
     let dragStartWorld = null;
@@ -417,11 +665,139 @@
     let linkingFromNote = null;
     let linkingMousePos = null;
     
+    // Selection tracking for properties sidebar
+    let selectedNote = null;
+    let selectedLink = null;
+    
+    // Template copies - initialized with factory defaults, updated when properties change
+    let lastNoteTemplate = {
+      midiNote: 60,        // C4
+      noteName: 'C4',
+      channel: 0,
+      duration: 0.25,      // Quarter note
+      velocity: 64,        // -6dB (standard default)
+      shape: 'circle',
+      color: '#3867d6',    // Lovely blue (8th color in palette)
+      size: 8,
+      isStart: false       // Never copy root status to new notes
+    };
+    
+    let lastLinkTemplate = {
+      weight: 1,
+      alwaysFire: false,
+      phase: 0
+    };
+    
     // MIDI state
+    // Web Audio synth (fallback when MIDI unavailable)
+    const audioSynth = {
+      context: null,
+      activeOscillators: new Map(), // Track playing notes: midiNote -> {osc, gain}
+      
+      init() {
+        try {
+          this.context = new (window.AudioContext || window.webkitAudioContext)();
+          console.log('Web Audio initialized');
+          return true;
+        }
+        catch (err) {
+          console.error('Web Audio initialization failed:', err);
+          return false;
+        }
+      },
+      
+      midiToFreq(midiNote) {
+        // A4 (MIDI note 69) = 440 Hz
+        return 440 * Math.pow(2, (midiNote - 69) / 12);
+      },
+      
+      playNote(midiNote, velocity, duration) {
+        if (!this.context) return;
+        
+        // Resume context if suspended (browser autoplay policy)
+        if (this.context.state === 'suspended') {
+          this.context.resume();
+        }
+        
+        const freq = this.midiToFreq(midiNote);
+        const osc = this.context.createOscillator();
+        const gain = this.context.createGain();
+        const filter = this.context.createBiquadFilter();
+        
+        // Configure oscillator (slightly detuned for richness)
+        osc.type = 'triangle'; // Warmer than sine, less harsh than square
+        osc.frequency.value = freq;
+        
+        // Configure filter (low-pass for softer sound)
+        filter.type = 'lowpass';
+        filter.frequency.value = freq * 4;
+        filter.Q.value = 1;
+        
+        // Configure envelope (ADSR-lite)
+        const vol = (velocity / 127) * 0.15; // Scale volume (quieter for comfort)
+        const now = this.context.currentTime;
+        const attack = 0.01;
+        const decay = 0.1;
+        const sustain = vol * 0.7;
+        const release = 0.1;
+        
+        // Attack-Decay-Sustain
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + attack);
+        gain.gain.linearRampToValueAtTime(sustain, now + attack + decay);
+        
+        // Connect: osc -> filter -> gain -> destination
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.context.destination);
+        
+        // Start playing
+        osc.start(now);
+        
+        // Schedule release and stop
+        const releaseTime = now + duration / 1000;
+        gain.gain.setValueAtTime(sustain, releaseTime);
+        gain.gain.linearRampToValueAtTime(0, releaseTime + release);
+        osc.stop(releaseTime + release);
+        
+        // Track active note
+        this.activeOscillators.set(midiNote, { osc, gain });
+        
+        // Clean up when done
+        osc.onended = () => {
+          this.activeOscillators.delete(midiNote);
+        };
+      },
+      
+      stopNote(midiNote) {
+        if (!this.context) return;
+        
+        const active = this.activeOscillators.get(midiNote);
+        if (active) {
+          const now = this.context.currentTime;
+          const release = 0.05; // Quick release
+          
+          active.gain.gain.cancelScheduledValues(now);
+          active.gain.gain.setValueAtTime(active.gain.gain.value, now);
+          active.gain.gain.linearRampToValueAtTime(0, now + release);
+          active.osc.stop(now + release);
+          
+          this.activeOscillators.delete(midiNote);
+        }
+      },
+      
+      stopAll() {
+        for (const [midiNote, active] of this.activeOscillators) {
+          this.stopNote(midiNote);
+        }
+      }
+    };
+    
     const midi = {
       access: null,
       output: null,
       connected: false,
+      useWebAudio: false, // Flag for fallback
       
       async init() {
         try {
@@ -451,28 +827,39 @@
             return true;
           }
           
-          console.warn('No MIDI ports found');
-          return false;
+          console.warn('No MIDI ports found, falling back to Web Audio');
+          this.useWebAudio = true;
+          return audioSynth.init();
         }
         catch (err) {
-          console.error('MIDI initialization failed:', err);
-          return false;
+          console.error('MIDI initialization failed, falling back to Web Audio:', err);
+          this.useWebAudio = true;
+          return audioSynth.init();
         }
       },
       
       sendNote(note, velocity, channel = 0) {
+        if (this.useWebAudio) {
+          // Web Audio doesn't use channels, just ignore
+          return; // Note: duration handled by activeNotes system
+        }
         if (!this.output) return;
         const status = 0x90 | (channel & 0x0F);
         this.output.send([status, note & 0x7F, velocity & 0x7F]);
       },
       
       sendNoteOff(note, channel = 0) {
+        if (this.useWebAudio) {
+          audioSynth.stopNote(note);
+          return;
+        }
         if (!this.output) return;
         const status = 0x80 | (channel & 0x0F);
         this.output.send([status, note & 0x7F, 0]);
       },
       
       sendCC(cc, value, channel = 0) {
+        if (this.useWebAudio) return; // Web Audio doesn't support CC
         if (!this.output) return;
         const status = 0xB0 | (channel & 0x0F);
         this.output.send([status, cc & 0x7F, value & 0x7F]);
@@ -480,34 +867,51 @@
     };
     
     // Context menu state
-    let contextMenu = null;
-    let contextMenuNote = null;
-    let contextMenuJustClosed = false;
     
     // Transport state
     let isPlaying = false;
     let isPaused = false;
-    let editMode = true; // Start with edit mode on
-    let eraserMode = false; // Eraser mode for deleting notes
+    let beatCount = 0; // Tracks beats (quarter notes) since play started
+    let playStartTime = 0; // When play button was pressed
     
     // Agents
     const agents = [];
     let lastFrameTime = 0;
     
+    // Active MIDI notes (for proper note-off timing)
+    const activeNotes = []; // { midiNote, channel, offTime }
+    
     // Settings
     let settings = {
       // Graph settings
-      backgroundColor: '#0a0a0a',
-      gridColor: '#1a1a1a',
-      noteColor: '#888888',
-      linkColor: '#cccccc',
+      theme: 'dark',
+      backgroundColor: themes.dark.backgroundColor,
+      gridColor: themes.dark.gridColor,
+      linkColor: themes.dark.linkColor,
+      teleportLinkColor: themes.dark.teleportLinkColor,
+      noteColor: '#3867d6', // 8th color in palette - lovely blue
       noteSize: 8,
       noteShape: 'circle',
       
+      // Default note properties (for creating new notes)
+      midiNote: 60, // C4
+      noteDuration: 0.25, // Quarter note
+      
       // System settings
-      gridSpacing: 40,
       bpm: 120
     };
+    
+    // Apply theme colors to settings
+    function applyTheme(themeName) {
+      const theme = themes[themeName];
+      if (theme) {
+        settings.theme = themeName;
+        settings.backgroundColor = theme.backgroundColor;
+        settings.gridColor = theme.gridColor;
+        settings.linkColor = theme.linkColor;
+        settings.teleportLinkColor = theme.teleportLinkColor;
+      }
+    }
     
     // Draw different note shapes
     function drawNoteShape(ctx, x, y, size, shape) {
@@ -568,22 +972,22 @@
       }
     }
     
-    // Factory function to create a new note with current settings
+    // Factory function to create a new note with current template settings
     function createNote(x, y) {
       return {
         x: x,
         y: y,
-        midiNote: 60,
-        noteName: 'C4',
-        channel: 0,
-        duration: 0.25,      // Quarter note in beats
-        velocity: 100,
+        midiNote: lastNoteTemplate.midiNote,
+        noteName: lastNoteTemplate.noteName,
+        channel: lastNoteTemplate.channel,
+        duration: lastNoteTemplate.duration,
+        velocity: lastNoteTemplate.velocity,
         rule: null,
         links: [],
-        shape: settings.noteShape,
-        color: settings.noteColor,
-        size: settings.noteSize,
-        isStart: false
+        shape: lastNoteTemplate.shape,
+        color: lastNoteTemplate.color,
+        size: lastNoteTemplate.size,
+        isStart: false  // New notes are never root notes
       };
     }
     
@@ -627,24 +1031,47 @@
       
       for (const note of notes.values()) {
         if (note.isStart && note.links.length > 0) {
-          // Create one agent for EACH link
-          for (const link of note.links) {
-            const targetKey = posKey(link.x, link.y);
-            const targetNote = notes.get(targetKey);
-            
-            if (targetNote) {
-              agents.push({
-                x: note.x,
-                y: note.y,
-                targetX: targetNote.x,
-                targetY: targetNote.y,
-                progress: 0,
-                currentNote: note,
-                targetNote: targetNote,
-                color: note.color || settings.noteColor
-              });
-            }
-          }
+          // Root notes don't move - they just sit at their position
+          // Create a dummy agent that immediately "arrives" to trigger the note's links
+          agents.push({
+            x: note.x,
+            y: note.y,
+            targetX: note.x,
+            targetY: note.y,
+            progress: 1, // Already at target - will trigger on first frame
+            currentNote: note,
+            targetNote: note,
+            color: note.color || settings.noteColor
+          });
+        }
+      }
+    }
+    
+    function triggerNoteSound(note) {
+      const channel = note.channel || 0;
+      const velocity = note.velocity || 100;
+      const durationBeats = note.duration || 0.25;
+      const durationMs = durationBeats * (240000 / settings.bpm); // duration is fraction of whole note
+      
+      if (midi.useWebAudio) {
+        audioSynth.playNote(note.midiNote, velocity, durationMs);
+      } else {
+        midi.sendNote(note.midiNote, velocity, channel);
+        
+        // Track for note-off timing (only needed for MIDI hardware)
+        activeNotes.push({
+          midiNote: note.midiNote,
+          channel: channel,
+          offTime: performance.now() + durationMs
+        });
+      }
+    }
+    
+    function triggerRootNotes() {
+      // Fire MIDI for all root notes on play
+      for (const note of notes.values()) {
+        if (note.isStart) {
+          triggerNoteSound(note);
         }
       }
     }
@@ -652,9 +1079,67 @@
     function updateAgents(deltaTime) {
       if (isPaused) return;
       
-      // Speed: gridSpacing pixels per beat
-      // At BPM, one beat = 60000/BPM milliseconds
-      const speed = settings.gridSpacing / (60000 / settings.bpm); // px per ms
+      // Helper to create an agent spawn object
+      const createAgentSpawn = (sourceNote, targetNote, phase, agentColor) => ({
+        x: sourceNote.x + (targetNote.x - sourceNote.x) * phase,
+        y: sourceNote.y + (targetNote.y - sourceNote.y) * phase,
+        targetX: targetNote.x,
+        targetY: targetNote.y,
+        progress: phase,
+        currentNote: sourceNote,
+        targetNote: targetNote,
+        color: agentColor
+      });
+      
+      // Process a link array: fire all alwaysFire links, pick one probabilistic
+      // Returns array of agents ready to spawn (with progress set by phase)
+      const processLinks = (sourceNote, linkArray, agentColor) => {
+        const spawns = [];
+        
+        // Fire all alwaysFire links
+        for (const link of linkArray) {
+          if (link.alwaysFire) {
+            const targetKey = posKey(link.x, link.y);
+            const targetNote = notes.get(targetKey);
+            if (targetNote) {
+              const phase = (link.phase || 0) / 100;
+              spawns.push(createAgentSpawn(sourceNote, targetNote, phase, agentColor));
+            }
+          }
+        }
+        
+        // Pick one probabilistic link (weighted random)
+        const probabilistic = linkArray.filter(l => !l.alwaysFire);
+        if (probabilistic.length > 0) {
+          const totalWeight = probabilistic.reduce((sum, link) => sum + (link.weight || 1), 0);
+          let random = Math.random() * totalWeight;
+          let selected = null;
+          
+          for (const link of probabilistic) {
+            random -= (link.weight || 1);
+            if (random <= 0) {
+              selected = link;
+              break;
+            }
+          }
+          
+          if (!selected) selected = probabilistic[0];
+          
+          const targetKey = posKey(selected.x, selected.y);
+          const targetNote = notes.get(targetKey);
+          if (targetNote) {
+            const phase = (selected.phase || 0) / 100;
+            spawns.push(createAgentSpawn(sourceNote, targetNote, phase, agentColor));
+          }
+        }
+        
+        return spawns;
+      };
+      
+      // Speed: one grid square = one sixteenth note (1/16)
+      // At BPM, one quarter note = 60000/BPM ms, so one 1/16 note = (60000/BPM)/4 ms
+      const sixteenthNoteDuration = (60000 / settings.bpm) / 4; // ms per 1/16 note
+      const speed = gridSpacing / sixteenthNoteDuration; // px per ms
       
       for (let i = agents.length - 1; i >= 0; i--) {
         const agent = agents[i];
@@ -667,55 +1152,54 @@
         if (totalDistance > 0) {
           const progressIncrement = (speed * deltaTime) / totalDistance;
           agent.progress += progressIncrement;
-          
-          if (agent.progress >= 1) {
+        }
+        
+        // Check if reached target (either by movement or already there)
+        if (agent.progress >= 1) {
             // Reached target note
             agent.progress = 1;
             agent.x = agent.targetX;
             agent.y = agent.targetY;
             
-            // Trigger MIDI
-            const channel = agent.targetNote.channel || 0;
-            const velocity = agent.targetNote.velocity || 100;
-            const durationBeats = agent.targetNote.duration || 0.25;
-            const durationMs = durationBeats * (60000 / settings.bpm);
+            // Trigger MIDI and visual feedback
+            triggerNoteSound(agent.targetNote);
             
-            midi.sendNote(agent.targetNote.midiNote, velocity, channel);
-            setTimeout(() => {
-              midi.sendNoteOff(agent.targetNote.midiNote, channel);
-            }, durationMs);
+            // Process all links - spawn agents based on phase
+            const spawns = processLinks(agent.targetNote, agent.targetNote.links, agent.color);
             
-            // Pick next target
-            if (agent.targetNote.links.length > 0) {
-              const link = agent.targetNote.links[Math.floor(Math.random() * agent.targetNote.links.length)];
-              const nextKey = posKey(link.x, link.y);
-              const nextNote = notes.get(nextKey);
-              
-              if (nextNote) {
-                agent.currentNote = agent.targetNote;
-                agent.x = agent.targetNote.x;
-                agent.y = agent.targetNote.y;
-                agent.targetX = nextNote.x;
-                agent.targetY = nextNote.y;
-                agent.targetNote = nextNote;
-                agent.progress = 0;
-                agent.color = agent.currentNote.color || settings.noteColor;
+            if (spawns.length > 0) {
+              // Trigger sounds for agents spawned at progress>=1 (instant arrival)
+              for (const spawn of spawns) {
+                if (spawn.progress >= 1) {
+                  triggerNoteSound(spawn.targetNote);
+                }
               }
-              else {
-                // Target doesn't exist, remove agent
-                agents.splice(i, 1);
+              
+              // First spawn becomes the continuation of this agent
+              const firstSpawn = spawns[0];
+              agent.currentNote = firstSpawn.currentNote;
+              agent.x = firstSpawn.x;
+              agent.y = firstSpawn.y;
+              agent.targetX = firstSpawn.targetX;
+              agent.targetY = firstSpawn.targetY;
+              agent.targetNote = firstSpawn.targetNote;
+              agent.progress = firstSpawn.progress;
+              agent.color = firstSpawn.color;
+              
+              // Remaining spawns (splitters) become new agents
+              for (let j = 1; j < spawns.length; j++) {
+                agents.push(spawns[j]);
               }
             }
             else {
-              // No more links, remove agent
+              // No links - agent dies
               agents.splice(i, 1);
             }
-          }
-          else {
-            // Interpolate position from START to TARGET
-            agent.x = agent.currentNote.x + (agent.targetX - agent.currentNote.x) * agent.progress;
-            agent.y = agent.currentNote.y + (agent.targetY - agent.currentNote.y) * agent.progress;
-          }
+        }
+        else if (totalDistance > 0) {
+          // Interpolate position from START to TARGET (only if moving)
+          agent.x = agent.currentNote.x + (agent.targetX - agent.currentNote.x) * agent.progress;
+          agent.y = agent.currentNote.y + (agent.targetY - agent.currentNote.y) * agent.progress;
         }
       }
     }
@@ -749,8 +1233,8 @@
     
     function snapToGrid(x, y) {
       return {
-        x: Math.round(x / settings.gridSpacing) * settings.gridSpacing,
-        y: Math.round(y / settings.gridSpacing) * settings.gridSpacing
+        x: Math.round(x / gridSpacing) * gridSpacing,
+        y: Math.round(y / gridSpacing) * gridSpacing
       };
     }
     
@@ -760,6 +1244,13 @@
         x: (screenX - panX) / zoom,
         y: (screenY - panY) / zoom
       };
+    }
+    
+    function getWorldPosition(e) {
+      const rect = canvas.getBoundingClientRect();
+      const screenX = e.clientX - rect.left;
+      const screenY = e.clientY - rect.top;
+      return screenToWorld(screenX, screenY);
     }
     
     // Find note at world position (within noteRadius distance)
@@ -778,597 +1269,73 @@
     
     // Find link at world position (within threshold distance to line)
     function findLinkAt(worldX, worldY) {
-      const threshold = 5; // pixels - reduced to make less sensitive
+      const threshold = 8; // Increased for easier clicking
       
+      // Helper to check if a point is near a link
+      const checkLink = (note, link, linkIndex) => {
+        const targetKey = posKey(link.x, link.y);
+        const targetNote = notes.get(targetKey);
+        
+        if (!targetNote) return null;
+        
+        // Calculate distance from point to line segment
+        const x1 = note.x;
+        const y1 = note.y;
+        const x2 = targetNote.x;
+        const y2 = targetNote.y;
+        
+        const C = x2 - x1;
+        const D = y2 - y1;
+        const lenSq = C * C + D * D;
+        
+        // If notes are very close (lenSq < 100 = distance < 10px), 
+        // just check if click is near midpoint
+        if (lenSq < 100) {
+          const midX = (x1 + x2) / 2;
+          const midY = (y1 + y2) / 2;
+          const dx = worldX - midX;
+          const dy = worldY - midY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance <= threshold) {
+            return { sourceNote: note, linkIndex: linkIndex, link: link };
+          }
+          return null;
+        }
+        
+        const A = worldX - x1;
+        const B = worldY - y1;
+        const dot = A * C + B * D;
+        const param = dot / lenSq;
+        
+        // Only accept hits in the middle third of the line (0.33 to 0.67)
+        if (param < 0.33 || param > 0.67) {
+          return null;
+        }
+        
+        const xx = x1 + param * C;
+        const yy = y1 + param * D;
+        
+        const dx = worldX - xx;
+        const dy = worldY - yy;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance <= threshold) {
+          return { sourceNote: note, linkIndex: linkIndex, link: link };
+        }
+        
+        return null;
+      };
+      
+      // Check all notes
       for (const note of notes.values()) {
         for (let i = 0; i < note.links.length; i++) {
-          const link = note.links[i];
-          const targetKey = posKey(link.x, link.y);
-          const targetNote = notes.get(targetKey);
-          
-          if (targetNote) {
-            // Calculate distance from point to line segment
-            const x1 = note.x;
-            const y1 = note.y;
-            const x2 = targetNote.x;
-            const y2 = targetNote.y;
-            
-            const A = worldX - x1;
-            const B = worldY - y1;
-            const C = x2 - x1;
-            const D = y2 - y1;
-            
-            const dot = A * C + B * D;
-            const lenSq = C * C + D * D;
-            let param = -1;
-            
-            if (lenSq != 0) {
-              param = dot / lenSq;
-            }
-            
-            // Only accept hits in the middle third of the line (0.33 to 0.67)
-            if (param < 0.33 || param > 0.67) {
-              continue;
-            }
-            
-            let xx, yy;
-            
-            if (param < 0) {
-              xx = x1;
-              yy = y1;
-            }
-            else if (param > 1) {
-              xx = x2;
-              yy = y2;
-            }
-            else {
-              xx = x1 + param * C;
-              yy = y1 + param * D;
-            }
-            
-            const dx = worldX - xx;
-            const dy = worldY - yy;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance <= threshold) {
-              return { sourceNote: note, linkIndex: i, link: link };
-            }
-          }
+          const result = checkLink(note, note.links[i], i);
+          if (result) return result;
         }
       }
+      
       return null;
-    }
-    
-    function showContextMenu(x, y, note) {
-      hideContextMenu();
-      
-      contextMenuNote = note;
-      contextMenu = document.createElement('div');
-      contextMenu.className = 'context-menu';
-      contextMenu.style.left = x + 'px';
-      contextMenu.style.top = y + 'px';
-      
-      // Prevent mousedown from propagating to canvas
-      contextMenu.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-      });
-      contextMenu.addEventListener('mouseup', (e) => {
-        e.stopPropagation();
-      });
-      
-      // Menu items
-      contextMenu.appendChild(createMenuItem('Edit Note', () => {
-        showNoteEditModal(note);
-      }));
-      
-      // Divider
-      const divider = document.createElement('div');
-      divider.className = 'context-menu-divider';
-      contextMenu.appendChild(divider);
-      
-      contextMenu.appendChild(createMenuItem('Delete Note', () => {
-        const key = posKey(note.x, note.y);
-        notes.delete(key);
-      }, true));
-      
-      contextMenu.appendChild(createMenuItem(
-        note.isStart ? 'Remove Start Note' : 'Set as Start Note',
-        () => { note.isStart = !note.isStart; }
-      ));
-      
-      contextMenu.appendChild(createMenuItem('Clear Links', () => {
-        note.links = [];
-      }));
-      
-      document.body.appendChild(contextMenu);
-    }
-    
-    function showLinkContextMenu(x, y, linkData) {
-      hideContextMenu();
-      
-      contextMenu = document.createElement('div');
-      contextMenu.className = 'context-menu';
-      contextMenu.style.left = x + 'px';
-      contextMenu.style.top = y + 'px';
-      
-      // Prevent mousedown from propagating to canvas
-      contextMenu.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-      });
-      contextMenu.addEventListener('mouseup', (e) => {
-        e.stopPropagation();
-      });
-      
-      contextMenu.appendChild(createMenuItem('Delete Link', () => {
-        linkData.sourceNote.links.splice(linkData.linkIndex, 1);
-      }, true));
-      
-      document.body.appendChild(contextMenu);
-    }
-    
-    function hideContextMenu() {
-      if (contextMenu) {
-        document.body.removeChild(contextMenu);
-        contextMenu = null;
-        contextMenuNote = null;
-        contextMenuJustClosed = true;
-        setTimeout(() => { contextMenuJustClosed = false; }, 100);
-      }
-    }
-    
-    // Close context menu on Escape key
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        hideContextMenu();
-      }
-    });
-    
-    function showSettingsModal() {
-      hideContextMenu();
-      
-      const overlay = document.createElement('div');
-      overlay.className = 'modal-overlay';
-      
-      // Prevent all mouse events from propagating
-      overlay.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-      });
-      overlay.addEventListener('mouseup', (e) => {
-        e.stopPropagation();
-      });
-      overlay.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-      
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      
-      // Close color pickers when clicking anywhere in modal
-      modal.addEventListener('click', (e) => {
-        if (e.target.type !== 'color') {
-          document.querySelectorAll('input[type="color"]').forEach(input => input.blur());
-        }
-      });
-      
-      const title = document.createElement('h3');
-      title.textContent = 'Settings';
-      modal.appendChild(title);
-      
-      // Graph section
-      const graphHeading = document.createElement('h4');
-      graphHeading.textContent = 'Graph';
-      modal.appendChild(graphHeading);
-      
-      // Color pickers in 2x2 grid
-      const colorGrid = document.createElement('div');
-      colorGrid.className = 'modal-grid';
-      
-      const bgInput = createColorInput(settings.backgroundColor);
-      const gridInput = createColorInput(settings.gridColor);
-      const linkInput = createColorInput(settings.linkColor);
-      
-      colorGrid.appendChild(createModalRow('Background', bgInput));
-      colorGrid.appendChild(createModalRow('Grid', gridInput));
-      colorGrid.appendChild(createModalRow('Link', linkInput));
-      
-      modal.appendChild(colorGrid);
-      
-      // Grid spacing
-      const spacingRow = document.createElement('div');
-      spacingRow.className = 'modal-row';
-      const spacingLabel = document.createElement('label');
-      spacingLabel.textContent = 'Grid Spacing';
-      const spacingInput = document.createElement('input');
-      spacingInput.type = 'number';
-      spacingInput.min = '10';
-      spacingInput.max = '100';
-      spacingInput.value = settings.gridSpacing;
-      spacingInput.style.width = '60px';
-      spacingInput.style.padding = '4px';
-      spacingInput.style.background = '#1a1a1a';
-      spacingInput.style.border = '1px solid #444';
-      spacingInput.style.color = '#ccc';
-      spacingInput.style.fontFamily = 'monospace';
-      spacingRow.appendChild(spacingLabel);
-      spacingRow.appendChild(spacingInput);
-      modal.appendChild(spacingRow);
-      
-      // Note defaults section
-      const noteHeading = document.createElement('h4');
-      noteHeading.textContent = 'Note Defaults';
-      modal.appendChild(noteHeading);
-      
-      const noteInput = createColorInput(settings.noteColor);
-      modal.appendChild(createModalRow('Color', noteInput));
-      
-      // Note size
-      const sizeRow = document.createElement('div');
-      sizeRow.className = 'modal-row';
-      const sizeLabel = document.createElement('label');
-      sizeLabel.textContent = 'Size';
-      const sizeInput = document.createElement('input');
-      sizeInput.type = 'number';
-      sizeInput.min = '2';
-      sizeInput.max = '20';
-      sizeInput.value = settings.noteSize;
-      sizeInput.style.width = '60px';
-      sizeInput.style.padding = '4px';
-      sizeInput.style.background = '#1a1a1a';
-      sizeInput.style.border = '1px solid #444';
-      sizeInput.style.color = '#ccc';
-      sizeInput.style.fontFamily = 'monospace';
-      sizeRow.appendChild(sizeLabel);
-      sizeRow.appendChild(sizeInput);
-      modal.appendChild(sizeRow);
-      
-      // Note shape
-      const shapeRow = document.createElement('div');
-      shapeRow.className = 'modal-row';
-      const shapeLabel = document.createElement('label');
-      shapeLabel.textContent = 'Shape';
-      const shapeSelect = document.createElement('select');
-      shapeSelect.style.width = '120px';
-      shapeSelect.style.padding = '4px';
-      shapeSelect.style.background = '#1a1a1a';
-      shapeSelect.style.border = '1px solid #444';
-      shapeSelect.style.color = '#ccc';
-      shapeSelect.style.fontFamily = 'monospace';
-      
-      const shapes = ['circle', 'square', 'diamond', 'triangle', 'hexagon', 'star'];
-      shapes.forEach(shape => {
-        const option = document.createElement('option');
-        option.value = shape;
-        option.textContent = shape.charAt(0).toUpperCase() + shape.slice(1);
-        if (shape === settings.noteShape) option.selected = true;
-        shapeSelect.appendChild(option);
-      });
-      
-      shapeRow.appendChild(shapeLabel);
-      shapeRow.appendChild(shapeSelect);
-      modal.appendChild(shapeRow);
-      
-      // Buttons
-      const buttons = document.createElement('div');
-      buttons.className = 'modal-buttons';
-      
-      const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'modal-button';
-      cancelBtn.textContent = 'Cancel';
-      cancelBtn.onclick = () => {
-        // Close any open color pickers
-        bgInput.blur();
-        gridInput.blur();
-        noteInput.blur();
-        linkInput.blur();
-        document.body.removeChild(overlay);
-      };
-      
-      const applyBtn = document.createElement('button');
-      applyBtn.className = 'modal-button primary';
-      applyBtn.textContent = 'Apply';
-      applyBtn.onclick = () => {
-        // Close any open color pickers
-        bgInput.blur();
-        gridInput.blur();
-        noteInput.blur();
-        linkInput.blur();
-        
-        settings.backgroundColor = bgInput.value;
-        settings.gridColor = gridInput.value;
-        settings.noteColor = noteInput.value;
-        settings.linkColor = linkInput.value;
-        settings.noteSize = parseInt(sizeInput.value);
-        settings.noteShape = shapeSelect.value;
-        settings.gridSpacing = parseInt(spacingInput.value);
-        document.body.removeChild(overlay);
-        render();
-      };
-      
-      buttons.appendChild(cancelBtn);
-      buttons.appendChild(applyBtn);
-      modal.appendChild(buttons);
-      
-      overlay.appendChild(modal);
-      
-      // Click overlay background to close
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          document.body.removeChild(overlay);
-        }
-      });
-      
-      document.body.appendChild(overlay);
-    }
-    
-    // Helper to convert hex colors to proper format for color input
-    function rgbToHex(color) {
-      // If already hex, return as-is
-      if (color.startsWith('#')) {
-        return color;
-      }
-      // Otherwise assume it's already valid
-      return color;
-    }
-    
-    // Helper to create a context menu item
-    function createMenuItem(text, onClick, isDanger = false) {
-      const item = document.createElement('div');
-      item.className = 'context-menu-item' + (isDanger ? ' danger' : '');
-      item.textContent = text;
-      item.onclick = (e) => {
-        e.stopPropagation();
-        onClick();
-        hideContextMenu();
-        render();
-      };
-      return item;
-    }
-    
-    // Helper to create a modal row with label and input
-    function createModalRow(label, input) {
-      const row = document.createElement('div');
-      row.className = 'modal-row';
-      const labelEl = document.createElement('label');
-      labelEl.textContent = label;
-      row.appendChild(labelEl);
-      row.appendChild(input);
-      return row;
-    }
-    
-    // Helper to create a color input
-    function createColorInput(value) {
-      const input = document.createElement('input');
-      input.type = 'color';
-      input.value = rgbToHex(value);
-      return input;
-    }
-    
-    // Update MIDI status indicator
-    function updateMIDIStatus() {
-      const light = document.getElementById('status-light');
-      const text = document.getElementById('status-text');
-      
-      if (midi.connected) {
-        light.className = 'status-light connected';
-        light.title = 'MIDI Connected';
-        text.textContent = 'MIDI Connected';
-        text.className = ''; // Reset fade
-        
-        // Fade out text after 10 seconds
-        setTimeout(() => {
-          text.classList.add('fade-out');
-        }, 10000);
-      }
-      else {
-        light.className = 'status-light disconnected';
-        light.title = 'Click to retry MIDI connection';
-        text.textContent = 'MIDI Disconnected';
-        text.className = ''; // Keep visible, no fade
-      }
-    }
-    
-    // Initialize MIDI connection
-    async function initMIDI() {
-      await midi.init();
-      updateMIDIStatus();
-    }
-    
-    function showNoteEditModal(note) {
-      const overlay = document.createElement('div');
-      overlay.className = 'modal-overlay';
-      
-      // Prevent all mouse events from propagating
-      overlay.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-      });
-      overlay.addEventListener('mouseup', (e) => {
-        e.stopPropagation();
-      });
-      overlay.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-      
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      
-      // Close color pickers when clicking anywhere in modal
-      modal.addEventListener('click', (e) => {
-        if (e.target.type !== 'color') {
-          document.querySelectorAll('input[type="color"]').forEach(input => input.blur());
-        }
-      });
-      
-      const title = document.createElement('h3');
-      title.textContent = 'Edit Note';
-      modal.appendChild(title);
-      
-      // MIDI section
-      const midiHeading = document.createElement('h4');
-      midiHeading.textContent = 'MIDI';
-      modal.appendChild(midiHeading);
-      
-      // Pitch/Note name
-      const pitchSelect = document.createElement('select');
-      pitchSelect.style.width = '80px';
-      pitchSelect.style.padding = '4px';
-      pitchSelect.style.background = '#1a1a1a';
-      pitchSelect.style.border = '1px solid #444';
-      pitchSelect.style.color = '#ccc';
-      pitchSelect.style.fontFamily = 'monospace';
-      
-      const noteOptions = generateNoteOptions();
-      noteOptions.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt.midi;
-        option.textContent = opt.name;
-        if (opt.midi === note.midiNote) option.selected = true;
-        pitchSelect.appendChild(option);
-      });
-      modal.appendChild(createModalRow('Pitch', pitchSelect));
-      
-      // Channel
-      const channelInput = document.createElement('input');
-      channelInput.type = 'number';
-      channelInput.min = '0';
-      channelInput.max = '15';
-      channelInput.value = note.channel || 0;
-      channelInput.style.width = '60px';
-      channelInput.style.padding = '4px';
-      channelInput.style.background = '#1a1a1a';
-      channelInput.style.border = '1px solid #444';
-      channelInput.style.color = '#ccc';
-      channelInput.style.fontFamily = 'monospace';
-      modal.appendChild(createModalRow('Channel', channelInput));
-      
-      // Duration
-      const durationSelect = document.createElement('select');
-      durationSelect.style.width = '120px';
-      durationSelect.style.padding = '4px';
-      durationSelect.style.background = '#1a1a1a';
-      durationSelect.style.border = '1px solid #444';
-      durationSelect.style.color = '#ccc';
-      durationSelect.style.fontFamily = 'monospace';
-      
-      const durations = [
-        { value: 0.0625, label: '1/16 ♬' },
-        { value: 0.125, label: '1/8 ♪' },
-        { value: 0.25, label: '1/4 ♩' },
-        { value: 0.5, label: '1/2 𝅗𝅥' },
-        { value: 1, label: '1/1 𝅝' }
-      ];
-      
-      durations.forEach(dur => {
-        const option = document.createElement('option');
-        option.value = dur.value;
-        option.textContent = dur.label;
-        if (dur.value === (note.duration || 0.25)) option.selected = true;
-        durationSelect.appendChild(option);
-      });
-      modal.appendChild(createModalRow('Duration', durationSelect));
-      
-      // Velocity
-      const velocityInput = document.createElement('input');
-      velocityInput.type = 'number';
-      velocityInput.min = '1';
-      velocityInput.max = '127';
-      velocityInput.value = note.velocity || 100;
-      velocityInput.style.width = '60px';
-      velocityInput.style.padding = '4px';
-      velocityInput.style.background = '#1a1a1a';
-      velocityInput.style.border = '1px solid #444';
-      velocityInput.style.color = '#ccc';
-      velocityInput.style.fontFamily = 'monospace';
-      modal.appendChild(createModalRow('Velocity', velocityInput));
-      
-      // Appearance section
-      const appearanceHeading = document.createElement('h4');
-      appearanceHeading.textContent = 'Appearance';
-      modal.appendChild(appearanceHeading);
-      
-      // Note color
-      const colorInput = createColorInput(note.color);
-      modal.appendChild(createModalRow('Color', colorInput));
-      
-      // Note size
-      const sizeInput = document.createElement('input');
-      sizeInput.type = 'number';
-      sizeInput.min = '2';
-      sizeInput.max = '20';
-      sizeInput.value = note.size;
-      sizeInput.style.width = '60px';
-      sizeInput.style.padding = '4px';
-      sizeInput.style.background = '#1a1a1a';
-      sizeInput.style.border = '1px solid #444';
-      sizeInput.style.color = '#ccc';
-      sizeInput.style.fontFamily = 'monospace';
-      modal.appendChild(createModalRow('Size', sizeInput));
-      
-      // Note shape
-      const shapeSelect = document.createElement('select');
-      shapeSelect.style.width = '120px';
-      shapeSelect.style.padding = '4px';
-      shapeSelect.style.background = '#1a1a1a';
-      shapeSelect.style.border = '1px solid #444';
-      shapeSelect.style.color = '#ccc';
-      shapeSelect.style.fontFamily = 'monospace';
-      
-      const shapes = ['circle', 'square', 'diamond', 'triangle', 'hexagon', 'star'];
-      shapes.forEach(shape => {
-        const option = document.createElement('option');
-        option.value = shape;
-        option.textContent = shape.charAt(0).toUpperCase() + shape.slice(1);
-        if (shape === note.shape) option.selected = true;
-        shapeSelect.appendChild(option);
-      });
-      modal.appendChild(createModalRow('Shape', shapeSelect));
-      
-      // Buttons
-      const buttons = document.createElement('div');
-      buttons.className = 'modal-buttons';
-      
-      const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'modal-button';
-      cancelBtn.textContent = 'Cancel';
-      cancelBtn.onclick = () => {
-        document.body.removeChild(overlay);
-      };
-      
-      const applyBtn = document.createElement('button');
-      applyBtn.className = 'modal-button primary';
-      applyBtn.textContent = 'Apply';
-      applyBtn.onclick = () => {
-        colorInput.blur();
-        
-        // MIDI properties
-        note.midiNote = parseInt(pitchSelect.value);
-        note.noteName = midiToNoteName(note.midiNote);
-        note.channel = parseInt(channelInput.value);
-        note.duration = parseFloat(durationSelect.value);
-        note.velocity = parseInt(velocityInput.value);
-        
-        // Appearance properties
-        note.color = colorInput.value;
-        note.size = parseInt(sizeInput.value);
-        note.shape = shapeSelect.value;
-        
-        document.body.removeChild(overlay);
-        render();
-      };
-      
-      buttons.appendChild(cancelBtn);
-      buttons.appendChild(applyBtn);
-      modal.appendChild(buttons);
-      
-      overlay.appendChild(modal);
-      
-      // Click overlay background to close
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          document.body.removeChild(overlay);
-        }
-      });
-      
-      document.body.appendChild(overlay);
     }
     
     // Resize canvas to fit window
@@ -1380,7 +1347,6 @@
     }
     
     function drawGrid() {
-      ctx.strokeStyle = settings.gridColor;
       ctx.lineWidth = 1 / zoom; // Keep line width consistent
       
       // Calculate visible world bounds
@@ -1388,21 +1354,39 @@
       const bottomRight = screenToWorld(canvas.width, canvas.height);
       
       // Extend grid beyond visible area
-      const startX = Math.floor(topLeft.x / settings.gridSpacing) * settings.gridSpacing;
-      const endX = Math.ceil(bottomRight.x / settings.gridSpacing) * settings.gridSpacing;
-      const startY = Math.floor(topLeft.y / settings.gridSpacing) * settings.gridSpacing;
-      const endY = Math.ceil(bottomRight.y / settings.gridSpacing) * settings.gridSpacing;
+      const startX = Math.floor(topLeft.x / gridSpacing) * gridSpacing;
+      const endX = Math.ceil(bottomRight.x / gridSpacing) * gridSpacing;
+      const startY = Math.floor(topLeft.y / gridSpacing) * gridSpacing;
+      const endY = Math.ceil(bottomRight.y / gridSpacing) * gridSpacing;
       
-      // Vertical lines
-      for (let x = startX; x <= endX; x += settings.gridSpacing) {
+      // Vertical lines (with beat emphasis every 4 lines = quarter note)
+      for (let x = startX; x <= endX; x += gridSpacing) {
+        const gridIndex = Math.round(x / gridSpacing);
+        const isBeatLine = gridIndex % 4 === 0; // Every 4th line = quarter note
+        
+        if (isBeatLine) {
+          ctx.strokeStyle = lightenColor(settings.gridColor, 0.3);
+        } else {
+          ctx.strokeStyle = settings.gridColor;
+        }
+        
         ctx.beginPath();
         ctx.moveTo(x, startY);
         ctx.lineTo(x, endY);
         ctx.stroke();
       }
       
-      // Horizontal lines
-      for (let y = startY; y <= endY; y += settings.gridSpacing) {
+      // Horizontal lines (with beat emphasis every 4 lines)
+      for (let y = startY; y <= endY; y += gridSpacing) {
+        const gridIndex = Math.round(y / gridSpacing);
+        const isBeatLine = gridIndex % 4 === 0;
+        
+        if (isBeatLine) {
+          ctx.strokeStyle = lightenColor(settings.gridColor, 0.3);
+        } else {
+          ctx.strokeStyle = settings.gridColor;
+        }
+        
         ctx.beginPath();
         ctx.moveTo(startX, y);
         ctx.lineTo(endX, y);
@@ -1410,75 +1394,97 @@
       }
     }
     
+    // Helper to lighten a color
+    function lightenColor(color, amount) {
+      // Parse hex color
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      
+      // Lighten
+      const nr = Math.min(255, Math.floor(r + (255 - r) * amount));
+      const ng = Math.min(255, Math.floor(g + (255 - g) * amount));
+      const nb = Math.min(255, Math.floor(b + (255 - b) * amount));
+      
+      return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+    }
+    
     function drawNotes() {
-      // Draw links first (behind notes)
+      const arrowSize = 6;
+      
+      // Helper to draw a single link
+      const drawLink = (note, link, color) => {
+        const targetKey = posKey(link.x, link.y);
+        const targetNote = notes.get(targetKey);
+        if (!targetNote) return;
+        
+        // Check if there's a reverse link (bidirectional)
+        const hasReverseLink = targetNote.links.some(l => 
+          l.x === note.x && l.y === note.y
+        );
+        
+        let startX = note.x;
+        let startY = note.y;
+        let endX = targetNote.x;
+        let endY = targetNote.y;
+        
+        // If bidirectional, offset this link to the right of the line direction
+        if (hasReverseLink) {
+          const dx = endX - startX;
+          const dy = endY - startY;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          
+          // Perpendicular offset (right side)
+          const offsetDist = 3;
+          const perpX = -dy / len * offsetDist;
+          const perpY = dx / len * offsetDist;
+          
+          startX += perpX;
+          startY += perpY;
+          endX += perpX;
+          endY += perpY;
+        }
+        
+        // Draw line
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+        
+        // Draw arrow head
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const angle = Math.atan2(dy, dx);
+        const len = Math.sqrt(dx * dx + dy * dy);
+        
+        const targetSize = targetNote.size || settings.noteSize;
+        
+        // Position arrow at edge of target note circle, not center
+        const arrowX = startX + (dx / len) * (len - targetSize);
+        const arrowY = startY + (dy / len) * (len - targetSize);
+        
+        ctx.save();
+        ctx.setLineDash([]); // Ensure arrow is solid
+        ctx.translate(arrowX, arrowY);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-arrowSize, -arrowSize / 2);
+        ctx.lineTo(-arrowSize, arrowSize / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      };
+      
+      // Draw all links
       ctx.strokeStyle = settings.linkColor;
       ctx.fillStyle = settings.linkColor;
       ctx.lineWidth = 1.5;
-      
-      const arrowSize = 6;
-      
+      ctx.setLineDash([]); // Solid
       for (const note of notes.values()) {
         for (const link of note.links) {
-          const targetKey = posKey(link.x, link.y);
-          const targetNote = notes.get(targetKey);
-          if (targetNote) {
-            // Check if there's a reverse link (bidirectional)
-            const hasReverseLink = targetNote.links.some(l => 
-              l.x === note.x && l.y === note.y
-            );
-            
-            let startX = note.x;
-            let startY = note.y;
-            let endX = targetNote.x;
-            let endY = targetNote.y;
-            
-            // If bidirectional, offset this link to the right of the line direction
-            if (hasReverseLink) {
-              const dx = endX - startX;
-              const dy = endY - startY;
-              const len = Math.sqrt(dx * dx + dy * dy);
-              
-              // Perpendicular offset (right side)
-              const offsetDist = 3;
-              const perpX = -dy / len * offsetDist;
-              const perpY = dx / len * offsetDist;
-              
-              startX += perpX;
-              startY += perpY;
-              endX += perpX;
-              endY += perpY;
-            }
-            
-            // Draw line
-            ctx.beginPath();
-            ctx.moveTo(startX, startY);
-            ctx.lineTo(endX, endY);
-            ctx.stroke();
-            
-            // Draw arrow head
-            const dx = endX - startX;
-            const dy = endY - startY;
-            const angle = Math.atan2(dy, dx);
-            const len = Math.sqrt(dx * dx + dy * dy);
-            
-            const targetSize = targetNote.size || settings.noteSize;
-            
-            // Position arrow at edge of target note circle, not center
-            const arrowX = startX + (dx / len) * (len - targetSize);
-            const arrowY = startY + (dy / len) * (len - targetSize);
-            
-            ctx.save();
-            ctx.translate(arrowX, arrowY);
-            ctx.rotate(angle);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-arrowSize, -arrowSize / 2);
-            ctx.lineTo(-arrowSize, arrowSize / 2);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-          }
+          drawLink(note, link, settings.linkColor);
         }
       }
       
@@ -1508,7 +1514,7 @@
         ctx.fill();
         ctx.stroke();
         
-        // Draw outer outline for start notes
+        // Draw outer outline for root notes
         if (note.isStart) {
           ctx.strokeStyle = color;
           ctx.lineWidth = 2;
@@ -1526,6 +1532,321 @@
         }
       }
     }
+    
+    // Properties sidebar management
+    const propertiesContent = document.getElementById('properties-content');
+    
+    // Use existing colorPalette and noteNames from top of file
+    
+    function updatePropertiesSidebar() {
+      if (selectedNote) {
+        showNoteProperties(selectedNote);
+      } else if (selectedLink) {
+        showLinkProperties(selectedLink);
+      } else {
+        showDefaultProperties();
+      }
+    }
+    
+    function showNoteProperties(note) {
+      const midiNote = note.midiNote || 60;
+      const octave = Math.floor(midiNote / 12) - 1;
+      const noteIndex = midiNote % 12;
+      
+      propertiesContent.innerHTML = `
+        <h3>Note Properties</h3>
+        
+        <div class="property-section">
+          <div class="property-label">Pitch</div>
+          <div class="note-grid">
+            ${noteNames.map((name, i) => `
+              <button class="note-btn ${i === noteIndex ? 'selected' : ''}" data-note="${i}">${name}</button>
+            `).join('')}
+          </div>
+          <div class="octave-selector">
+            ${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(oct => `
+              <button class="octave-btn ${oct === octave ? 'selected' : ''}" data-octave="${oct}">${oct}</button>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Color</div>
+          <input type="range" class="color-slider" min="0" max="15" step="1" 
+                 value="${colorPalette.indexOf(note.color) >= 0 ? colorPalette.indexOf(note.color) : 0}" 
+                 data-property="color">
+          <div class="color-preview" style="background: ${note.color}"></div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Duration</div>
+          <select class="property-select" data-property="duration">
+            <option value="0.0625" ${(note.duration || 0.25) === 0.0625 ? 'selected' : ''}>1/16</option>
+            <option value="0.125" ${(note.duration || 0.25) === 0.125 ? 'selected' : ''}>1/8</option>
+            <option value="0.25" ${(note.duration || 0.25) === 0.25 ? 'selected' : ''}>1/4</option>
+            <option value="0.5" ${(note.duration || 0.25) === 0.5 ? 'selected' : ''}>1/2</option>
+            <option value="1.0" ${(note.duration || 0.25) === 1.0 ? 'selected' : ''}>1/1</option>
+          </select>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Velocity</div>
+          <input type="range" class="property-slider" min="0" max="127" step="1" 
+                 value="${note.velocity || 100}" data-property="velocity">
+          <div class="property-value">${note.velocity || 100}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Channel</div>
+          <input type="range" class="property-slider" min="0" max="15" step="1" 
+                 value="${note.channel || 0}" data-property="channel">
+          <div class="property-value">${note.channel || 0}</div>
+        </div>
+        
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <button class="property-button property-button-warning" data-action="clear-links">Clear Links</button>
+          <button class="property-button property-button-danger" data-action="delete-note">Delete Note</button>
+        </div>
+      `;
+      
+      attachNotePropertyHandlers(note);
+    }
+    
+    function showLinkProperties(linkData) {
+      const link = linkData.link;
+      
+      propertiesContent.innerHTML = `
+        <h3>Link Properties</h3>
+        
+        <div class="property-section">
+          <div class="property-label">Weight</div>
+          <input type="range" class="property-slider" min="1" max="100" step="1" 
+                 value="${link.weight || 1}" data-property="weight">
+          <div class="property-value">${link.weight || 1}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Phase</div>
+          <input type="range" class="property-slider" min="0" max="100" step="1" 
+                 value="${link.phase || 0}" data-property="phase">
+          <div class="property-value">${link.phase || 0}%</div>
+        </div>
+        
+        <div class="property-section">
+          <label class="property-checkbox">
+            <input type="checkbox" ${link.alwaysFire ? 'checked' : ''} data-property="alwaysFire">
+            <span>Always Fire</span>
+          </label>
+        </div>
+        
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <button class="property-button property-button-danger" data-action="delete-link">Delete Link</button>
+        </div>
+      `;
+      
+      attachLinkPropertyHandlers(linkData);
+    }
+    
+    function showDefaultProperties() {
+      propertiesContent.innerHTML = `
+        <div style="padding: 40px 20px; text-align: center; color: #666; font-size: 13px; line-height: 1.6;">
+          <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 15px; color: #888;">Agent based MIDI graph sequencer</p>
+          <p style="margin: 0 0 20px 0; font-weight: bold; font-size: 12px; color: #666;">Version 0.1</p>
+          <p style="margin: 0 0 12px 0;">Double-click to create notes</p>
+          <p style="margin: 0 0 12px 0;">Double-click note to toggle root</p>
+          <p style="margin: 0 0 12px 0;">Ctrl+drag to create links</p>
+          <p style="margin: 0 0 12px 0;">Alt+drag to zoom</p>
+          <p style="margin: 0 0 12px 0;">Shift+drag to pan</p>
+          <p style="margin: 0;">Click note or link to edit</p>
+        </div>
+      `;
+    }
+    
+    function formatDuration(beats) {
+      if (beats >= 1) return '1/1';
+      if (beats >= 0.5) return '1/2';
+      if (beats >= 0.25) return '1/4';
+      if (beats >= 0.125) return '1/8';
+      return '1/16';
+    }
+    
+    function formatPropertyValue(prop, value) {
+      if (prop === 'duration') return formatDuration(value);
+      if (prop === 'phase') return `${value}%`;
+      return value;
+    }
+    
+    function updateNoteTemplate(note) {
+      lastNoteTemplate = {
+        midiNote: note.midiNote,
+        noteName: note.noteName,
+        channel: note.channel,
+        duration: note.duration,
+        velocity: note.velocity,
+        shape: note.shape,
+        color: note.color,
+        size: note.size
+      };
+    }
+    
+    function updateLinkTemplate(link) {
+      lastLinkTemplate = {
+        weight: link.weight,
+        alwaysFire: link.alwaysFire,
+        phase: link.phase
+      };
+    }
+    
+    function attachNotePropertyHandlers(note) {
+      // Note selection
+      propertiesContent.querySelectorAll('.note-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const noteIndex = parseInt(btn.dataset.note);
+          const octave = Math.floor(note.midiNote / 12) - 1;
+          note.midiNote = (octave + 1) * 12 + noteIndex;
+          note.noteName = midiToNoteName(note.midiNote);
+          updateNoteTemplate(note);
+          
+          // Update button states
+          propertiesContent.querySelectorAll('.note-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          
+          render();
+        });
+      });
+      
+      // Octave selection
+      propertiesContent.querySelectorAll('.octave-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const octave = parseInt(btn.dataset.octave);
+          const noteIndex = note.midiNote % 12;
+          note.midiNote = (octave + 1) * 12 + noteIndex;
+          note.noteName = midiToNoteName(note.midiNote);
+          updateNoteTemplate(note);
+          
+          // Update button states
+          propertiesContent.querySelectorAll('.octave-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          
+          render();
+        });
+      });
+      
+      // Color slider
+      const colorSlider = propertiesContent.querySelector('.color-slider');
+      if (colorSlider) {
+        colorSlider.addEventListener('input', () => {
+          const colorIndex = parseInt(colorSlider.value);
+          note.color = colorPalette[colorIndex];
+          
+          // Update preview
+          const preview = propertiesContent.querySelector('.color-preview');
+          if (preview) {
+            preview.style.background = note.color;
+          }
+          
+          updateNoteTemplate(note);
+          render();
+        });
+      }
+      
+      // Sliders
+      propertiesContent.querySelectorAll('.property-slider').forEach(slider => {
+        const updateValue = () => {
+          const prop = slider.dataset.property;
+          const value = parseFloat(slider.value);
+          note[prop] = value;
+          
+          const valueDisplay = slider.nextElementSibling;
+          valueDisplay.textContent = formatPropertyValue(prop, value);
+          updateNoteTemplate(note);
+          render();
+        };
+        
+        slider.addEventListener('input', updateValue);
+      });
+      
+      // Select dropdowns
+      propertiesContent.querySelectorAll('.property-select').forEach(select => {
+        select.addEventListener('change', () => {
+          const prop = select.dataset.property;
+          note[prop] = parseFloat(select.value);
+          updateNoteTemplate(note);
+          render();
+        });
+      });
+      
+      // Checkboxes
+      propertiesContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const prop = checkbox.dataset.property;
+          note[prop] = checkbox.checked;
+          updateNoteTemplate(note);
+          render();
+        });
+      });
+      
+      // Action buttons
+      propertiesContent.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          if (action === 'delete-note') {
+            const key = posKey(note.x, note.y);
+            notes.delete(key);
+            selectedNote = null;
+            updatePropertiesSidebar();
+            render();
+          } else if (action === 'clear-links') {
+            note.links = [];
+            render();
+          }
+        });
+      });
+    }
+    
+    function attachLinkPropertyHandlers(linkData) {
+      const link = linkData.link;
+      
+      // Sliders
+      propertiesContent.querySelectorAll('.property-slider').forEach(slider => {
+        const updateValue = () => {
+          const prop = slider.dataset.property;
+          const value = parseInt(slider.value);
+          link[prop] = value;
+          
+          const valueDisplay = slider.nextElementSibling;
+          valueDisplay.textContent = formatPropertyValue(prop, value);
+          updateLinkTemplate(link);
+          render();
+        };
+        
+        slider.addEventListener('input', updateValue);
+      });
+      
+      // Checkboxes
+      propertiesContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const prop = checkbox.dataset.property;
+          link[prop] = checkbox.checked;
+          updateLinkTemplate(link);
+          render();
+        });
+      });
+      
+      // Action buttons
+      propertiesContent.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          if (action === 'delete-link') {
+            linkData.sourceNote.links.splice(linkData.linkIndex, 1);
+            selectedLink = null;
+            updatePropertiesSidebar();
+            render();
+          }
+        });
+      });
+    }
+    
     
     function render() {
       // Clear
@@ -1545,19 +1866,50 @@
     }
     
     // Animation loop
-    function animate(timestamp) {
+    function updateLoop(timestamp) {
       if (isPlaying) {
         const deltaTime = lastFrameTime ? timestamp - lastFrameTime : 0;
         lastFrameTime = timestamp;
+        
+        // Process note-offs (only needed for MIDI hardware)
+        if (!midi.useWebAudio) {
+          const now = performance.now();
+          for (let i = activeNotes.length - 1; i >= 0; i--) {
+            if (now >= activeNotes[i].offTime) {
+              midi.sendNoteOff(activeNotes[i].midiNote, activeNotes[i].channel);
+              activeNotes.splice(i, 1);
+            }
+          }
+        }
+        
+        // Update beat counter in B:Q:S format (Bar:Quarter:Sixteenth)
+        if (!isPaused) {
+          const elapsedTime = timestamp - playStartTime; // ms since play started
+          const sixteenthNoteDuration = (60000 / settings.bpm) / 4; // ms per 1/16 note
+          const totalSixteenths = Math.floor(elapsedTime / sixteenthNoteDuration);
+          
+          // Calculate B:Q:S (hardcoded to 4/4 time for now)
+          const sixteenthsPerBar = 16; // 4 beats * 4 sixteenths = 16 sixteenths per bar
+          const bar = Math.floor(totalSixteenths / sixteenthsPerBar) + 1; // Bars start at 1
+          const sixteenthInBar = totalSixteenths % sixteenthsPerBar;
+          const quarter = Math.floor(sixteenthInBar / 4) + 1; // Quarters 1-4
+          const sixteenth = (sixteenthInBar % 4) + 1; // Sixteenths 1-4
+          
+          // Update display
+          const beatValue = document.getElementById('beat-value');
+          beatValue.textContent = `${bar}:${quarter}:${sixteenth}`;
+        }
         
         updateAgents(deltaTime);
         render();
       }
       
-      requestAnimationFrame(animate);
+      requestAnimationFrame(updateLoop);
     }
     
     // Mouse wheel for zoom
+    // Wheel zoom disabled - use Alt+left drag instead
+    /*
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       
@@ -1582,35 +1934,31 @@
       
       render();
     });
+    */
     
-    // Middle mouse button or space+drag for panning
     canvas.addEventListener('mousedown', (e) => {
-      hideContextMenu();
+      const world = getWorldPosition(e);
       
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      const world = screenToWorld(mouseX, mouseY);
-      
-      if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
-        // Pan mode
+      if (e.button === 0 && e.shiftKey) {
+        // Shift+left drag - pan universe
         e.preventDefault();
         isPanning = true;
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
-        canvas.style.cursor = 'grabbing';
+        canvas.style.cursor = 'move'; // NSEW compass cursor
       }
-      else if (editMode && eraserMode && e.button === 0) {
-        // Eraser mode - delete note on click
-        const note = findNoteAt(world.x, world.y);
-        if (note) {
-          const key = posKey(note.x, note.y);
-          notes.delete(key);
-          render();
-        }
+      else if (e.button === 0 && e.altKey) {
+        // Alt+left drag - zoom
+        e.preventDefault();
+        zooming = true;
+        zoomStartY = e.clientY;
+        zoomStartX = e.clientX;
+        zoomStartValue = zoom;
+        canvas.style.cursor = 'zoom-in'; // Magnifying glass
       }
-      else if (editMode && e.button === 0 && e.ctrlKey) {
-        // Ctrl+click - start creating a link (only in edit mode)
+      else if (e.button === 0 && e.ctrlKey) {
+        // Ctrl+left drag on note - create link
+        e.preventDefault();
         const note = findNoteAt(world.x, world.y);
         if (note) {
           linkingFromNote = note;
@@ -1618,43 +1966,88 @@
           canvas.style.cursor = 'crosshair';
         }
       }
-      else if (editMode && e.button === 0) {
-        // Left click - check for note to drag (only in edit mode and not in eraser mode)
-        if (!eraserMode) {
+      else if (e.button === 0) {
+        // Left click - check for link first (higher priority), then note
+        const linkData = findLinkAt(world.x, world.y);
+        if (linkData) {
+          selectedLink = linkData;
+          selectedNote = null;
+          updatePropertiesSidebar();
+          
+          // Visual feedback: briefly highlight this specific link
+          const flashLink = linkData;
+          const drawFlash = () => {
+            ctx.save();
+            ctx.translate(panX, panY);
+            ctx.scale(zoom, zoom);
+            
+            const sourceNote = flashLink.sourceNote;
+            const targetKey = posKey(flashLink.link.x, flashLink.link.y);
+            const targetNote = notes.get(targetKey);
+            
+            if (targetNote) {
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 3;
+              ctx.beginPath();
+              ctx.moveTo(sourceNote.x, sourceNote.y);
+              ctx.lineTo(targetNote.x, targetNote.y);
+              ctx.stroke();
+            }
+            
+            ctx.restore();
+          };
+          
+          render();
+          drawFlash();
+          
+          setTimeout(() => {
+            render();
+          }, 150);
+        }
+        else {
           const note = findNoteAt(world.x, world.y);
           if (note) {
+            selectedNote = note;
+            selectedLink = null;
+            updatePropertiesSidebar();
+            
+            // Also allow dragging
             draggedNote = note;
             dragStartWorld = { x: world.x, y: world.y };
             draggedNoteOriginalPos = { x: note.x, y: note.y };
-            canvas.style.cursor = 'grab';
+            canvas.style.cursor = 'grabbing';
           }
         }
+        // Click on empty space - no-op (keep current selection)
       }
     });
     
-    canvas.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
+    canvas.addEventListener('dblclick', (e) => {
+      const world = getWorldPosition(e);
+      const snapped = snapToGrid(world.x, world.y);
+      const key = posKey(snapped.x, snapped.y);
       
-      if (!editMode) return; // Disable context menus when not in edit mode
-      
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      const world = screenToWorld(mouseX, mouseY);
-      
-      // Check for link first (higher priority since they're harder to click)
-      const linkData = findLinkAt(world.x, world.y);
-      if (linkData) {
-        showLinkContextMenu(e.clientX, e.clientY, linkData);
-        return;
+      if (!notes.has(key)) {
+        // Create new note
+        const note = createNote(snapped.x, snapped.y);
+        // Auto-set as start note if this is the first note
+        if (notes.size === 0) {
+          note.isStart = true;
+        }
+        notes.set(key, note);
+        
+        // Auto-select the newly created note
+        selectedNote = note;
+        selectedLink = null;
+        updatePropertiesSidebar();
+        
+        render();
+      } else {
+        // Toggle root status on existing note
+        const note = notes.get(key);
+        note.isStart = !note.isStart;
+        render();
       }
-      
-      // Then check for note
-      const note = findNoteAt(world.x, world.y);
-      if (note) {
-        showContextMenu(e.clientX, e.clientY, note);
-      }
-      // Empty space - do nothing (Setup button handles settings now)
     });
     
     window.addEventListener('mousemove', (e) => {
@@ -1670,23 +2063,40 @@
         
         render();
       }
-      else if (draggedNote) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const world = screenToWorld(mouseX, mouseY);
+      else if (zooming) {
+        const deltaY = zoomStartY - e.clientY; // Up = zoom in, only use vertical
+        const zoomDelta = deltaY * 0.005; // Sensitivity
         
-        // Update note position
-        draggedNote.x = world.x;
-        draggedNote.y = world.y;
+        let newZoom = zoomStartValue + zoomDelta;
+        newZoom = Math.max(0.1, Math.min(5, newZoom));
+        
+        // Zoom towards original mouse position (stored at start)
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = zoomStartX - rect.left;
+        const mouseY = zoomStartY - rect.top;
+        
+        const worldBefore = screenToWorld(mouseX, mouseY);
+        zoom = newZoom;
+        const worldAfter = screenToWorld(mouseX, mouseY);
+        
+        panX += (worldAfter.x - worldBefore.x) * zoom;
+        panY += (worldAfter.y - worldBefore.y) * zoom;
+        
+        render();
+      }
+      else if (draggedNote) {
+        const world = getWorldPosition(e);
+        
+        const dx = world.x - dragStartWorld.x;
+        const dy = world.y - dragStartWorld.y;
+        
+        draggedNote.x = draggedNoteOriginalPos.x + dx;
+        draggedNote.y = draggedNoteOriginalPos.y + dy;
         
         render();
       }
       else if (linkingFromNote) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const world = screenToWorld(mouseX, mouseY);
+        const world = getWorldPosition(e);
         
         linkingMousePos = world;
         render();
@@ -1694,18 +2104,21 @@
     });
     
     window.addEventListener('mouseup', (e) => {
-      if (e.button === 1 || e.button === 0) {
+      if (e.button === 0) {
         if (isPanning) {
           isPanning = false;
+          canvas.style.cursor = 'default';
+        }
+        else if (zooming) {
+          zooming = false;
+          canvas.style.cursor = 'default';
         }
         else if (linkingFromNote) {
-          // Complete link creation (only happens if edit mode was on)
-          const rect = canvas.getBoundingClientRect();
-          const mouseX = e.clientX - rect.left;
-          const mouseY = e.clientY - rect.top;
-          const world = screenToWorld(mouseX, mouseY);
+          // Complete link creation
+          const world = getWorldPosition(e);
           
           let targetNote = findNoteAt(world.x, world.y);
+          let createdNewNote = false;
           
           // If no note at drop location, create one
           if (!targetNote && targetNote !== linkingFromNote) {
@@ -1715,6 +2128,7 @@
             if (!notes.has(key)) {
               targetNote = createNote(snapped.x, snapped.y);
               notes.set(key, targetNote);
+              createdNewNote = true;
             }
             else {
               targetNote = notes.get(key);
@@ -1722,19 +2136,42 @@
           }
           
           if (targetNote && targetNote !== linkingFromNote) {
-            // Add link from source to target
-            linkingFromNote.links.push({
+            // Add link - copy from template
+            const newLink = {
               x: targetNote.x,
-              y: targetNote.y
-            });
+              y: targetNote.y,
+              weight: lastLinkTemplate.weight,
+              alwaysFire: lastLinkTemplate.alwaysFire,
+              phase: lastLinkTemplate.phase
+            };
+            linkingFromNote.links.push(newLink);
+            
+            // Update template from this newly created link
+            lastLinkTemplate = { ...newLink };
+            
+            // If we created a new note, select it; otherwise select the link
+            if (createdNewNote) {
+              selectedNote = targetNote;
+              selectedLink = null;
+            } else {
+              selectedLink = {
+                sourceNote: linkingFromNote,
+                link: linkingFromNote.links[linkingFromNote.links.length - 1],
+                linkIndex: linkingFromNote.links.length - 1
+              };
+              selectedNote = null;
+            }
+            
+            updatePropertiesSidebar();
           }
           
           linkingFromNote = null;
           linkingMousePos = null;
+          canvas.style.cursor = 'default';
           render();
         }
         else if (draggedNote) {
-          // Snap to grid and update map key (only happens if edit mode was on)
+          // Snap to grid and update map key
           const oldKey = posKey(draggedNoteOriginalPos.x, draggedNoteOriginalPos.y);
           
           const snapped = snapToGrid(draggedNote.x, draggedNote.y);
@@ -1761,42 +2198,22 @@
           draggedNote = null;
           dragStartWorld = null;
           draggedNoteOriginalPos = null;
+          canvas.style.cursor = 'default';
           
           render();
         }
-        else if (editMode && !eraserMode && e.button === 0 && !e.shiftKey && !e.ctrlKey) {
-          // Left click on empty space - create new note (only in edit mode, not in eraser mode)
-          const rect = canvas.getBoundingClientRect();
-          const mouseX = e.clientX - rect.left;
-          const mouseY = e.clientY - rect.top;
-          const world = screenToWorld(mouseX, mouseY);
-          
-          const snapped = snapToGrid(world.x, world.y);
-          const key = posKey(snapped.x, snapped.y);
-          
-          if (!notes.has(key)) {
-            const note = createNote(snapped.x, snapped.y);
-            // Auto-set as start note if this is the first note
-            if (notes.size === 0) {
-              note.isStart = true;
-            }
-            notes.set(key, note);
-            render();
-          }
-        }
-        
-        canvas.style.cursor = editMode ? 'crosshair' : 'default';
+        // Left click on empty space - do nothing (safe)
       }
     });
     
     // Initial render
     resizeCanvas();
     
-    // Start animation loop
-    animate(0);
+    // Start main update loop
+    updateLoop(0);
     
     // Initialize MIDI
-    initMIDI();
+    midi.init();
     
     // Resize canvas on window resize
     window.addEventListener('resize', resizeCanvas);
@@ -1804,61 +2221,8 @@
     // Click status light to retry connection
     document.getElementById('status-light').addEventListener('click', () => {
       if (!midi.connected) {
-        initMIDI();
+        midi.init();
       }
-    });
-    
-    // System settings button
-    const settingsBtn = document.getElementById('system-settings-btn');
-    settingsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showSettingsModal();
-    });
-    settingsBtn.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-    });
-    settingsBtn.addEventListener('mouseup', (e) => {
-      e.stopPropagation();
-    });
-    
-    // Edit mode button
-    const editModeBtn = document.getElementById('edit-mode-btn');
-    editModeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      editMode = !editMode;
-      editModeBtn.classList.toggle('active', editMode);
-      editModeBtn.textContent = editMode ? '🔓' : '🔒';
-      canvas.style.cursor = editMode ? 'crosshair' : 'default';
-      
-      // Turn off eraser mode when toggling edit mode
-      if (!editMode && eraserMode) {
-        eraserMode = false;
-        eraserModeBtn.classList.remove('active');
-      }
-    });
-    editModeBtn.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-    });
-    editModeBtn.addEventListener('mouseup', (e) => {
-      e.stopPropagation();
-    });
-    
-    // Eraser mode button
-    const eraserModeBtn = document.getElementById('eraser-mode-btn');
-    eraserModeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      
-      // Can only use eraser when edit mode is on
-      if (!editMode) return;
-      
-      eraserMode = !eraserMode;
-      eraserModeBtn.classList.toggle('active', eraserMode);
-    });
-    eraserModeBtn.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-    });
-    eraserModeBtn.addEventListener('mouseup', (e) => {
-      e.stopPropagation();
     });
     
     // BPM display
@@ -1867,7 +2231,6 @@
     let bpmDragging = false;
     let bpmDragStartX = 0;
     let bpmDragStartValue = 0;
-    let editModeBeforeBPMDrag = false;
     
     bpmDisplay.addEventListener('mousedown', (e) => {
       e.stopPropagation();
@@ -1876,10 +2239,6 @@
       bpmDragStartX = e.clientX;
       bpmDragStartValue = settings.bpm;
       bpmDisplay.style.cursor = 'ew-resize';
-      
-      // Temporarily disable edit mode while dragging
-      editModeBeforeBPMDrag = editMode;
-      editMode = false;
     });
     
     window.addEventListener('mousemove', (e) => {
@@ -1900,9 +2259,6 @@
       if (bpmDragging) {
         bpmDragging = false;
         bpmDisplay.style.cursor = 'ew-resize';
-        
-        // Restore edit mode
-        editMode = editModeBeforeBPMDrag;
       }
     });
     
@@ -1920,7 +2276,16 @@
       stopBtn.disabled = false;
       playBtn.classList.remove('active');
       lastFrameTime = 0;
-      spawnAgentsFromStartNotes();
+      playStartTime = performance.now(); // Record play start time
+      beatCount = 0;
+      
+      // Small delay before starting (gives user a moment)
+      setTimeout(() => {
+        if (isPlaying) { // Check we haven't stopped already
+          triggerRootNotes();
+          spawnAgentsFromStartNotes();
+        }
+      }, 250);
     });
     
     pauseBtn.addEventListener('click', (e) => {
@@ -1929,6 +2294,8 @@
       pauseBtn.classList.toggle('active', isPaused);
       if (!isPaused) {
         lastFrameTime = 0; // Reset timing when resuming
+        // Adjust playStartTime to account for paused duration
+        playStartTime = performance.now() - (beatCount * (60000 / settings.bpm));
       }
     });
     
@@ -1941,6 +2308,19 @@
       stopBtn.disabled = true;
       pauseBtn.classList.remove('active');
       agents.length = 0; // Clear all agents
+      beatCount = 0;
+      
+      // Send note-off for all active notes
+      if (midi.useWebAudio) {
+        audioSynth.stopAll();
+      } else {
+        for (const activeNote of activeNotes) {
+          midi.sendNoteOff(activeNote.midiNote, activeNote.channel);
+        }
+      }
+      activeNotes.length = 0;
+      
+      document.getElementById('beat-value').textContent = '1:1:1';
       render(); // Redraw without agents
     });
     
@@ -1949,6 +2329,10 @@
       btn.addEventListener('mousedown', (e) => e.stopPropagation());
       btn.addEventListener('mouseup', (e) => e.stopPropagation());
     });
+    
+    // Initialize properties sidebar with helpful hints
+    updatePropertiesSidebar();
+    render();
   </script>
 </body>
 </html>
