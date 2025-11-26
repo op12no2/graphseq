@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Spatial Sequencer</title>
+  <title>MIDI Graph Sequencer</title>
   <style>
     body {
       margin: 0;
@@ -15,7 +15,7 @@
     
     #properties-sidebar {
       position: fixed;
-      top: 40px;
+      top: 64px;
       left: 0;
       bottom: 0;
       width: 240px;
@@ -260,9 +260,79 @@
       cursor: pointer;
     }
     
+    #menu-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 24px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 200;
+      gap: 16px;
+    }
+    
+    .menu-item {
+      position: relative;
+      color: #888;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 3px;
+      user-select: none;
+    }
+    
+    .menu-item:hover {
+      background: #2a2a2a;
+      color: #ccc;
+    }
+    
+    .menu-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      min-width: 120px;
+      display: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 300;
+    }
+    
+    .menu-dropdown.active {
+      display: block;
+    }
+    
+    .menu-dropdown-item {
+      padding: 6px 12px;
+      color: #ccc;
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    .menu-dropdown-item:hover {
+      background: #3a3a3a;
+      color: #fff;
+    }
+    
+    .menu-dropdown-item:first-child {
+      border-radius: 4px 4px 0 0;
+    }
+    
+    .menu-dropdown-item:last-child {
+      border-radius: 0 0 4px 4px;
+    }
+    
     #container {
       position: fixed;
-      top: 40px;
+      top: 64px;
       left: 240px;
       right: 0;
       bottom: 0;
@@ -273,7 +343,7 @@
     
     #midi-status {
       position: fixed;
-      top: 14px;
+      top: 38px;
       left: 10px;
       display: flex;
       align-items: center;
@@ -285,7 +355,7 @@
     
     #transport {
       position: fixed;
-      top: 4px;
+      top: 28px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -295,13 +365,13 @@
     
     #bpm-display {
       position: fixed;
-      top: 4px;
+      top: 28px;
       left: 50%;
       transform: translateX(-150px);
       height: 32px;
       padding: 0 8px;
-      background: #2a2a2a;
-      border: 1px solid #444;
+      background: transparent;
+      border: 1px solid transparent;
       border-radius: 4px;
       color: #888;
       font-size: 12px;
@@ -316,13 +386,13 @@
     
     #beat-counter {
       position: fixed;
-      top: 4px;
+      top: 28px;
       left: 50%;
       transform: translateX(100px);
       height: 32px;
       padding: 0 12px;
-      background: #2a2a2a;
-      border: 1px solid #444;
+      background: transparent;
+      border: 1px solid transparent;
       border-radius: 4px;
       color: #888;
       font-size: 14px;
@@ -341,7 +411,8 @@
     }
     
     #bpm-display:hover {
-      border-color: #555;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #444;
       color: #aaa;
     }
     
@@ -591,6 +662,16 @@
     </div>
   </div>
   
+  <div id="menu-bar">
+    <div class="menu-item" id="menu-file">
+      File
+      <div class="menu-dropdown" id="file-dropdown">
+        <div class="menu-dropdown-item" id="menu-save">Save</div>
+        <div class="menu-dropdown-item" id="menu-load">Open</div>
+      </div>
+    </div>
+  </div>
+  
   <div id="container">
     <div id="midi-status">
       <div class="status-light disconnected" id="status-light" title="Click to retry MIDI connection"></div>
@@ -605,7 +686,7 @@
       <button class="transport-btn" id="pause-btn" title="Pause" disabled>⏸</button>
       <button class="transport-btn" id="stop-btn" title="Stop" disabled>⏹</button>
     </div>
-    <div id="beat-counter">
+    <div id="beat-counter" title="bar : 1/4 note : 1/16 note">
       <span id="beat-value">1:1:1</span>
     </div>
     <canvas id="canvas"></canvas>
@@ -684,9 +765,14 @@
     
     let lastLinkTemplate = {
       weight: 1,
-      alwaysFire: false,
+      probability: 100,  // 0-100, chance this link fires
+      group: 0,          // 0-10, links in same group compete
       phase: 0
     };
+    
+    // Model metadata
+    let modelName = 'Untitled';
+    let modelDescription = '';
     
     // MIDI state
     // Web Audio synth (fallback when MIDI unavailable)
@@ -883,6 +969,7 @@
     
     // Settings
     let settings = {
+      version: "0.2",
       // Graph settings
       theme: 'dark',
       backgroundColor: themes.dark.backgroundColor,
@@ -896,6 +983,38 @@
       // Default note properties (for creating new notes)
       midiNote: 60, // C4
       noteDuration: 0.25, // Quarter note
+      
+      // Visual tuning constants
+      agentSize: 10, // Agent circle radius
+      arrowSize: 6, // Link arrow head size
+      linkLineWidth: 1.5, // Link stroke width
+      linkCreatingDashPattern: [5, 5], // Dash pattern while creating link
+      noteStrokeWidth: 2, // Note outline width
+      noteRootStrokeWidth: 3, // Root note outline width (thicker)
+      gridLineWidth: 1, // Grid line width
+      phaseIndicatorRadius: 4, // Phase position circle radius
+      linkClickThreshold: 8, // Distance in pixels to click a link
+      
+      // Note fire visual feedback
+      noteFireFlashDuration: 150, // ms to show note fire flash
+      noteFireFlashBrightness: 1.3, // Size multiplier when fired (1.0 = normal)
+      noteFireFlashColor: '#cccccc', // Flash color (use less bright gray instead of white)
+      
+      // Link property limits
+      linkMaxGroups: 10, // Maximum group ID (0-10)
+      linkMaxWeight: 10, // Maximum weight value (0-10, 0 = equal if all are 0)
+      
+      // Link probability visual feedback
+      linkProbabilityMinBrightness: 50,  // rgb value at 0% probability (dark gray)
+      linkProbabilityMaxBrightness: 204, // rgb value at 100% probability (off-white)
+      
+      // Selection box
+      selectionBoxPaddingNote: 20, // Extra space around selected notes
+      linkSelectionBoxScale: 0.3, // Link selection box size as fraction of link length
+      selectionBoxDashPattern: [4, 4], // Dotted pattern for selection box
+      selectionBoxColor: '#aaaaaa', // Selection box color (darker gray)
+      selectionBoxLineWidth: 1, // Selection box stroke width
+      bidirectionalLinkOffset: 3, // Perpendicular offset for bidirectional links
       
       // System settings
       bpm: 120
@@ -1048,8 +1167,11 @@
     }
     
     function triggerNoteSound(note) {
+      // Mark note as just fired for visual feedback
+      note.lastFireTime = performance.now();
+      
       const channel = note.channel || 0;
-      const velocity = note.velocity || 100;
+      const velocity = note.velocity !== undefined ? note.velocity : 100;
       const durationBeats = note.duration || 0.25;
       const durationMs = durationBeats * (240000 / settings.bpm); // duration is fraction of whole note
       
@@ -1091,45 +1213,64 @@
         color: agentColor
       });
       
-      // Process a link array: fire all alwaysFire links, pick one probabilistic
-      // Returns array of agents ready to spawn (with progress set by phase)
+      // Process links using group-based probability algorithm
+      // Returns array of agents ready to spawn (one per group that fires)
       const processLinks = (sourceNote, linkArray, agentColor) => {
         const spawns = [];
         
-        // Fire all alwaysFire links
+        // Group links by group ID
+        const groups = {};
         for (const link of linkArray) {
-          if (link.alwaysFire) {
-            const targetKey = posKey(link.x, link.y);
-            const targetNote = notes.get(targetKey);
-            if (targetNote) {
-              const phase = (link.phase || 0) / 100;
-              spawns.push(createAgentSpawn(sourceNote, targetNote, phase, agentColor));
-            }
-          }
+          const groupId = link.group !== undefined ? link.group : 0;
+          if (!groups[groupId]) groups[groupId] = [];
+          groups[groupId].push(link);
         }
         
-        // Pick one probabilistic link (weighted random)
-        const probabilistic = linkArray.filter(l => !l.alwaysFire);
-        if (probabilistic.length > 0) {
-          const totalWeight = probabilistic.reduce((sum, link) => sum + (link.weight || 1), 0);
-          let random = Math.random() * totalWeight;
-          let selected = null;
+        // Process each group
+        for (const groupId in groups) {
+          const groupLinks = groups[groupId];
           
-          for (const link of probabilistic) {
-            random -= (link.weight || 1);
-            if (random <= 0) {
-              selected = link;
-              break;
+          // Build fired list - links that pass probability check
+          const fired = [];
+          for (const link of groupLinks) {
+            const prob = (link.probability !== undefined ? link.probability : 100) / 100;
+            if (Math.random() < prob) {
+              fired.push(link);
             }
           }
           
-          if (!selected) selected = probabilistic[0];
-          
-          const targetKey = posKey(selected.x, selected.y);
-          const targetNote = notes.get(targetKey);
-          if (targetNote) {
-            const phase = (selected.phase || 0) / 100;
-            spawns.push(createAgentSpawn(sourceNote, targetNote, phase, agentColor));
+          // If any fired, pick one by weight and spawn agent
+          if (fired.length > 0) {
+            // Weighted random selection from fired links
+            const totalWeight = fired.reduce((sum, l) => sum + (l.weight !== undefined ? l.weight : 1), 0);
+            let selected = null;
+            
+            // If all weights are 0, pick uniformly at random
+            if (totalWeight === 0) {
+              selected = fired[Math.floor(Math.random() * fired.length)];
+            } else {
+              // Weighted selection
+              let random = Math.random() * totalWeight;
+              
+              for (const link of fired) {
+                const weight = link.weight !== undefined ? link.weight : 1;
+                random -= weight;
+                if (random <= 0) {
+                  selected = link;
+                  break;
+                }
+              }
+              
+              if (!selected) selected = fired[0]; // Fallback
+            }
+            
+            // Spawn agent for selected link
+            const targetKey = posKey(selected.x, selected.y);
+            const targetNote = notes.get(targetKey);
+            if (targetNote) {
+              const phase = (selected.phase || 0) / 100;
+              spawns.push(createAgentSpawn(sourceNote, targetNote, phase, agentColor));
+            }
           }
         }
         
@@ -1164,37 +1305,23 @@
             // Trigger MIDI and visual feedback
             triggerNoteSound(agent.targetNote);
             
-            // Process all links - spawn agents based on phase
+            // Process all links - spawn new agents based on group/probability
             const spawns = processLinks(agent.targetNote, agent.targetNote.links, agent.color);
             
-            if (spawns.length > 0) {
-              // Trigger sounds for agents spawned at progress>=1 (instant arrival)
-              for (const spawn of spawns) {
-                if (spawn.progress >= 1) {
-                  triggerNoteSound(spawn.targetNote);
-                }
-              }
-              
-              // First spawn becomes the continuation of this agent
-              const firstSpawn = spawns[0];
-              agent.currentNote = firstSpawn.currentNote;
-              agent.x = firstSpawn.x;
-              agent.y = firstSpawn.y;
-              agent.targetX = firstSpawn.targetX;
-              agent.targetY = firstSpawn.targetY;
-              agent.targetNote = firstSpawn.targetNote;
-              agent.progress = firstSpawn.progress;
-              agent.color = firstSpawn.color;
-              
-              // Remaining spawns (splitters) become new agents
-              for (let j = 1; j < spawns.length; j++) {
-                agents.push(spawns[j]);
+            // Trigger sounds for agents spawned at progress>=1 (instant arrival)
+            for (const spawn of spawns) {
+              if (spawn.progress >= 1) {
+                triggerNoteSound(spawn.targetNote);
               }
             }
-            else {
-              // No links - agent dies
-              agents.splice(i, 1);
+            
+            // All spawns become new agents
+            for (const spawn of spawns) {
+              agents.push(spawn);
             }
+            
+            // Original agent dies (remove from array)
+            agents.splice(i, 1);
         }
         else if (totalDistance > 0) {
           // Interpolate position from START to TARGET (only if moving)
@@ -1206,7 +1333,7 @@
     
     function drawAgents() {
       for (const agent of agents) {
-        const size = 6;
+        const size = settings.agentSize;
         
         // Glowing effect with radial gradient
         const gradient = ctx.createRadialGradient(agent.x, agent.y, 0, agent.x, agent.y, size);
@@ -1269,7 +1396,7 @@
     
     // Find link at world position (within threshold distance to line)
     function findLinkAt(worldX, worldY) {
-      const threshold = 8; // Increased for easier clicking
+      const threshold = settings.linkClickThreshold;
       
       // Helper to check if a point is near a link
       const checkLink = (note, link, linkIndex) => {
@@ -1347,7 +1474,7 @@
     }
     
     function drawGrid() {
-      ctx.lineWidth = 1 / zoom; // Keep line width consistent
+      ctx.lineWidth = settings.gridLineWidth / zoom; // Keep line width consistent regardless of zoom
       
       // Calculate visible world bounds
       const topLeft = screenToWorld(0, 0);
@@ -1411,7 +1538,7 @@
     }
     
     function drawNotes() {
-      const arrowSize = 6;
+      const arrowSize = settings.arrowSize;
       
       // Helper to draw a single link
       const drawLink = (note, link, color) => {
@@ -1436,9 +1563,8 @@
           const len = Math.sqrt(dx * dx + dy * dy);
           
           // Perpendicular offset (right side)
-          const offsetDist = 3;
-          const perpX = -dy / len * offsetDist;
-          const perpY = dx / len * offsetDist;
+          const perpX = -dy / len * settings.bidirectionalLinkOffset;
+          const perpY = dx / len * settings.bidirectionalLinkOffset;
           
           startX += perpX;
           startY += perpY;
@@ -1446,7 +1572,9 @@
           endY += perpY;
         }
         
-        // Draw line
+        // Draw line with provided color
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
         ctx.beginPath();
         ctx.moveTo(startX, startY);
         ctx.lineTo(endX, endY);
@@ -1478,21 +1606,85 @@
       };
       
       // Draw all links
-      ctx.strokeStyle = settings.linkColor;
-      ctx.fillStyle = settings.linkColor;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = settings.linkLineWidth;
       ctx.setLineDash([]); // Solid
+      
+      const phaseIndicators = []; // Collect phase indicators to draw last
+      
       for (const note of notes.values()) {
         for (const link of note.links) {
-          drawLink(note, link, settings.linkColor);
+          const targetKey = posKey(link.x, link.y);
+          const targetNote = notes.get(targetKey);
+          if (!targetNote) continue;
+          
+          // Calculate link positions (same logic as drawLink)
+          const hasReverseLink = targetNote.links.some(l => 
+            l.x === note.x && l.y === note.y
+          );
+          
+          let startX = note.x;
+          let startY = note.y;
+          let endX = targetNote.x;
+          let endY = targetNote.y;
+          
+          if (hasReverseLink) {
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            const perpX = -dy / len * settings.bidirectionalLinkOffset;
+            const perpY = dx / len * settings.bidirectionalLinkOffset;
+            startX += perpX;
+            startY += perpY;
+            endX += perpX;
+            endY += perpY;
+          }
+          
+          // Calculate link color based on probability (0% = darker, 100% = white)
+          const prob = (link.probability !== undefined ? link.probability : 100) / 100;
+          const brightness = Math.round(
+            settings.linkProbabilityMinBrightness + 
+            prob * (settings.linkProbabilityMaxBrightness - settings.linkProbabilityMinBrightness)
+          );
+          const linkColor = `rgb(${brightness}, ${brightness}, ${brightness})`;
+          
+          drawLink(note, link, linkColor);
+          
+          // Store phase indicator data for later
+          const phase = (link.phase || 0) / 100;
+          if (phase > 0) {
+            // Calculate arrow position (where link meets target note edge)
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            const targetSize = targetNote.size || settings.noteSize;
+            const phaseIndicatorRadius = settings.phaseIndicatorRadius;
+            
+            // Clamp phase to arrow position minus indicator radius
+            const maxPhase = len > 0 ? (len - targetSize - phaseIndicatorRadius) / len : 1;
+            const clampedPhase = Math.min(phase, maxPhase);
+            
+            phaseIndicators.push({
+              x: startX + (endX - startX) * clampedPhase,
+              y: startY + (endY - startY) * clampedPhase,
+              color: linkColor
+            });
+          }
         }
+      }
+      
+      // Draw phase indicators last (on top of arrows)
+      for (const indicator of phaseIndicators) {
+        ctx.fillStyle = indicator.color;
+        ctx.beginPath();
+        ctx.arc(indicator.x, indicator.y, 4, 0, Math.PI * 2);
+        ctx.fill();
       }
       
       // Draw link being created
       if (linkingFromNote && linkingMousePos) {
         ctx.strokeStyle = settings.linkColor;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = settings.linkLineWidth;
+        ctx.setLineDash(settings.linkCreatingDashPattern);
         ctx.beginPath();
         ctx.moveTo(linkingFromNote.x, linkingFromNote.y);
         ctx.lineTo(linkingMousePos.x, linkingMousePos.y);
@@ -1508,16 +1700,34 @@
         
         ctx.fillStyle = color;
         ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = settings.noteStrokeWidth;
+        
+        // Check if note recently fired and should flash
+        const now = performance.now();
+        const timeSinceFire = note.lastFireTime ? now - note.lastFireTime : Infinity;
+        const isFlashing = timeSinceFire < settings.noteFireFlashDuration;
         
         drawNoteShape(ctx, note.x, note.y, size, shape);
         ctx.fill();
         ctx.stroke();
         
+        // Draw bright flash if recently fired
+        if (isFlashing) {
+          ctx.save();
+          ctx.globalAlpha = 1 - (timeSinceFire / settings.noteFireFlashDuration); // Fade out
+          ctx.fillStyle = settings.noteFireFlashColor;
+          ctx.strokeStyle = settings.noteFireFlashColor;
+          ctx.lineWidth = settings.noteStrokeWidth * settings.noteFireFlashBrightness;
+          drawNoteShape(ctx, note.x, note.y, size * settings.noteFireFlashBrightness, shape);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        
         // Draw outer outline for root notes
         if (note.isStart) {
           ctx.strokeStyle = color;
-          ctx.lineWidth = 2;
+          ctx.lineWidth = settings.noteStrokeWidth;
           drawNoteShape(ctx, note.x, note.y, size + 3, shape);
           ctx.stroke();
         }
@@ -1525,10 +1735,10 @@
         // Highlight if this is the source of a link being created
         if (linkingFromNote === note) {
           ctx.strokeStyle = '#6a6a6a';
-          ctx.lineWidth = 3;
+          ctx.lineWidth = settings.noteRootStrokeWidth;
           ctx.stroke();
           ctx.strokeStyle = color; // Restore
-          ctx.lineWidth = 2;
+          ctx.lineWidth = settings.noteStrokeWidth;
         }
       }
     }
@@ -1592,8 +1802,8 @@
         <div class="property-section">
           <div class="property-label">Velocity</div>
           <input type="range" class="property-slider" min="0" max="127" step="1" 
-                 value="${note.velocity || 100}" data-property="velocity">
-          <div class="property-value">${note.velocity || 100}</div>
+                 value="${note.velocity !== undefined ? note.velocity : 100}" data-property="velocity">
+          <div class="property-value">${note.velocity !== undefined ? note.velocity : 100}</div>
         </div>
         
         <div class="property-section">
@@ -1619,24 +1829,31 @@
         <h3>Link Properties</h3>
         
         <div class="property-section">
-          <div class="property-label">Weight</div>
-          <input type="range" class="property-slider" min="1" max="100" step="1" 
-                 value="${link.weight || 1}" data-property="weight">
-          <div class="property-value">${link.weight || 1}</div>
+          <div class="property-label">Group (0-${settings.linkMaxGroups})</div>
+          <input type="range" class="property-slider" min="0" max="${settings.linkMaxGroups}" step="1" 
+                 value="${link.group !== undefined ? link.group : 0}" data-property="group">
+          <div class="property-value">${link.group !== undefined ? link.group : 0}</div>
         </div>
         
         <div class="property-section">
-          <div class="property-label">Phase</div>
+          <div class="property-label">Probability (0-100%)</div>
+          <input type="range" class="property-slider" min="0" max="100" step="1" 
+                 value="${link.probability !== undefined ? link.probability : 100}" data-property="probability">
+          <div class="property-value">${link.probability !== undefined ? link.probability : 100}%</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Weight (0-${settings.linkMaxWeight})</div>
+          <input type="range" class="property-slider" min="0" max="${settings.linkMaxWeight}" step="1" 
+                 value="${link.weight !== undefined ? link.weight : 1}" data-property="weight">
+          <div class="property-value">${link.weight !== undefined ? link.weight : 1}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Phase (0-100%)</div>
           <input type="range" class="property-slider" min="0" max="100" step="1" 
                  value="${link.phase || 0}" data-property="phase">
           <div class="property-value">${link.phase || 0}%</div>
-        </div>
-        
-        <div class="property-section">
-          <label class="property-checkbox">
-            <input type="checkbox" ${link.alwaysFire ? 'checked' : ''} data-property="alwaysFire">
-            <span>Always Fire</span>
-          </label>
         </div>
         
         <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
@@ -1649,17 +1866,53 @@
     
     function showDefaultProperties() {
       propertiesContent.innerHTML = `
-        <div style="padding: 40px 20px; text-align: center; color: #666; font-size: 13px; line-height: 1.6;">
-          <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 15px; color: #888;">Agent based MIDI graph sequencer</p>
-          <p style="margin: 0 0 20px 0; font-weight: bold; font-size: 12px; color: #666;">Version 0.1</p>
-          <p style="margin: 0 0 12px 0;">Double-click to create notes</p>
-          <p style="margin: 0 0 12px 0;">Double-click note to toggle root</p>
-          <p style="margin: 0 0 12px 0;">Ctrl+drag to create links</p>
-          <p style="margin: 0 0 12px 0;">Alt+drag to zoom</p>
-          <p style="margin: 0 0 12px 0;">Shift+drag to pan</p>
-          <p style="margin: 0;">Click note or link to edit</p>
+        <h3>Sequencer</h3>
+        
+        <div class="property-section">
+          <div class="property-label">Name</div>
+          <input type="text" id="model-name" value="${modelName}" 
+                 style="width: 95%; padding: 6px; background: #2a2a2a; border: 1px solid #444; 
+                        border-radius: 3px; color: #ccc; font-family: monospace; font-size: 12px;">
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Description</div>
+          <textarea id="model-description" rows="8"
+                    style="width: 95%; padding: 6px; background: #2a2a2a; border: 1px solid #444; 
+                           border-radius: 3px; color: #ccc; font-family: monospace; font-size: 12px; 
+                           resize: vertical;">${modelDescription}</textarea>
+        </div>
+        
+        <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #333; color: #666; font-size: 11px; line-height: 1.5;">
+          <p style="margin: 0 0 8px 0; font-weight: bold; color: #888;">SHORTCUTS</p>
+          <p style="margin: 0 0 4px 0;">Double-click: new note</p>
+          <p style="margin: 0 0 4px 0;">Double-click note: toggle root</p>
+          <p style="margin: 0 0 4px 0;">Ctrl+drag from note: new link</p>
+          <p style="margin: 0 0 4px 0;">Alt+drag: zoom</p>
+          <p style="margin: 0 0 4px 0;">Shift+drag: pan</p>
+          <p style="margin: 0 0 4px 0;">←/→: cycle selection</p>
+          <p style="margin: 0 0 4px 0;">Tab: toggle notes/links ←/→</p>
+          <p style="margin: 0 0 4px 0;">Delete: remove selected</p>
+          <p style="margin: 0;">Esc: deselect</p>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #333; color: #666; font-size: 11px; line-height: 1.5;">
+          <p style="margin: 0 0 8px 0; font-weight: bold; color: #888;">VERSION</p>
+          <p style="margin: 0 0 4px 0;">${settings.version}</p>
         </div>
       `;
+      
+      // Attach handlers
+      const nameInput = document.getElementById('model-name');
+      const descInput = document.getElementById('model-description');
+      
+      nameInput.addEventListener('input', () => {
+        modelName = nameInput.value;
+      });
+      
+      descInput.addEventListener('input', () => {
+        modelDescription = descInput.value;
+      });
     }
     
     function formatDuration(beats) {
@@ -1673,6 +1926,7 @@
     function formatPropertyValue(prop, value) {
       if (prop === 'duration') return formatDuration(value);
       if (prop === 'phase') return `${value}%`;
+      if (prop === 'probability') return `${value}%`;
       return value;
     }
     
@@ -1692,7 +1946,8 @@
     function updateLinkTemplate(link) {
       lastLinkTemplate = {
         weight: link.weight,
-        alwaysFire: link.alwaysFire,
+        probability: link.probability,
+        group: link.group,
         phase: link.phase
       };
     }
@@ -1823,16 +2078,6 @@
         slider.addEventListener('input', updateValue);
       });
       
-      // Checkboxes
-      propertiesContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-          const prop = checkbox.dataset.property;
-          link[prop] = checkbox.checked;
-          updateLinkTemplate(link);
-          render();
-        });
-      });
-      
       // Action buttons
       propertiesContent.querySelectorAll('[data-action]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1845,6 +2090,178 @@
           }
         });
       });
+    }
+    
+    // Save/Load functionality
+    function saveSequence() {
+      const data = {
+        version: settings.version,
+        notes: Array.from(notes.entries()).map(([key, note]) => ({
+          key: key,
+          note: note
+        })),
+        metadata: {
+          name: modelName,
+          description: modelDescription
+        },
+        settings: {
+          bpm: settings.bpm,
+          theme: settings.theme
+        },
+        camera: {
+          panX: panX,
+          panY: panY,
+          zoom: zoom
+        }
+      };
+      
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // Use modelName for filename, sanitize and add timestamp if empty
+      const safeName = modelName.trim() || 'Untitled';
+      const filename = safeName.replace(/[^a-z0-9_\-]/gi, '_').toLowerCase();
+      //a.download = `${filename}-${Date.now()}.json`;
+      a.download = `${filename}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      console.log('Sequence saved');
+    }
+    
+    function loadSequence() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            
+            // Clear current state
+            notes.clear();
+            agents.length = 0;
+            selectedNote = null;
+            selectedLink = null;
+            
+            // Restore notes
+            if (data.notes) {
+              for (const item of data.notes) {
+                notes.set(item.key, item.note);
+              }
+            }
+            
+            // Restore metadata
+            if (data.metadata) {
+              modelName = data.metadata.name || 'Untitled';
+              modelDescription = data.metadata.description || '';
+            } else {
+              modelName = 'Untitled';
+              modelDescription = '';
+            }
+            
+            // Restore settings
+            if (data.settings) {
+              if (data.settings.bpm) settings.bpm = data.settings.bpm;
+              if (data.settings.theme) applyTheme(data.settings.theme);
+            }
+            
+            // Restore camera
+            if (data.camera) {
+              panX = data.camera.panX || 0;
+              panY = data.camera.panY || 0;
+              zoom = data.camera.zoom || 1;
+            }
+            
+            // Show default properties with loaded metadata
+            selectedNote = null;
+            selectedLink = null;
+            updatePropertiesSidebar();
+            render();
+            console.log('Sequence loaded');
+          } catch (err) {
+            console.error('Failed to load sequence:', err);
+            alert('Failed to load sequence file');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+          
+    function drawSelectionBox() {
+      ctx.strokeStyle = settings.selectionBoxColor;
+      ctx.lineWidth = settings.selectionBoxLineWidth;
+      ctx.setLineDash(settings.selectionBoxDashPattern);
+      
+      if (selectedNote) {
+        // Draw box around selected note
+        const size = selectedNote.size || settings.noteSize;
+        const boxSize = size * 2 + settings.selectionBoxPaddingNote;
+        ctx.strokeRect(
+          selectedNote.x - boxSize / 2,
+          selectedNote.y - boxSize / 2,
+          boxSize,
+          boxSize
+        );
+      } else if (selectedLink) {
+        // Draw box around selected link center
+        const sourceNote = selectedLink.sourceNote;
+        const link = selectedLink.link;
+        const targetKey = posKey(link.x, link.y);
+        const targetNote = notes.get(targetKey);
+        
+        if (targetNote) {
+          // Calculate actual drawn link position (with bidirectional offset)
+          const hasReverseLink = targetNote.links.some(l => 
+            l.x === sourceNote.x && l.y === sourceNote.y
+          );
+          
+          let startX = sourceNote.x;
+          let startY = sourceNote.y;
+          let endX = targetNote.x;
+          let endY = targetNote.y;
+          
+          if (hasReverseLink) {
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            
+            const perpX = -dy / len * settings.bidirectionalLinkOffset;
+            const perpY = dx / len * settings.bidirectionalLinkOffset;
+            
+            startX += perpX;
+            startY += perpY;
+            endX += perpX;
+            endY += perpY;
+          }
+          
+          // Calculate link length and center
+          const dx = endX - startX;
+          const dy = endY - startY;
+          const linkLength = Math.sqrt(dx * dx + dy * dy);
+          const centerX = (startX + endX) / 2;
+          const centerY = (startY + endY) / 2;
+          
+          // Box size is proportional to link length
+          const boxSize = linkLength * settings.linkSelectionBoxScale;
+          
+          ctx.strokeRect(
+            centerX - boxSize / 2,
+            centerY - boxSize / 2,
+            boxSize,
+            boxSize
+          );
+        }
+      }
+      
+      ctx.setLineDash([]); // Reset to solid
     }
     
     
@@ -1861,6 +2278,7 @@
       drawGrid();
       drawNotes();
       drawAgents(); // Draw agents on top of notes
+      drawSelectionBox(); // Draw selection indicator on top
       
       ctx.restore();
     }
@@ -1973,36 +2391,7 @@
           selectedLink = linkData;
           selectedNote = null;
           updatePropertiesSidebar();
-          
-          // Visual feedback: briefly highlight this specific link
-          const flashLink = linkData;
-          const drawFlash = () => {
-            ctx.save();
-            ctx.translate(panX, panY);
-            ctx.scale(zoom, zoom);
-            
-            const sourceNote = flashLink.sourceNote;
-            const targetKey = posKey(flashLink.link.x, flashLink.link.y);
-            const targetNote = notes.get(targetKey);
-            
-            if (targetNote) {
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 3;
-              ctx.beginPath();
-              ctx.moveTo(sourceNote.x, sourceNote.y);
-              ctx.lineTo(targetNote.x, targetNote.y);
-              ctx.stroke();
-            }
-            
-            ctx.restore();
-          };
-          
           render();
-          drawFlash();
-          
-          setTimeout(() => {
-            render();
-          }, 150);
         }
         else {
           const note = findNoteAt(world.x, world.y);
@@ -2141,7 +2530,8 @@
               x: targetNote.x,
               y: targetNote.y,
               weight: lastLinkTemplate.weight,
-              alwaysFire: lastLinkTemplate.alwaysFire,
+              probability: lastLinkTemplate.probability,
+              group: lastLinkTemplate.group,
               phase: lastLinkTemplate.phase
             };
             linkingFromNote.links.push(newLink);
@@ -2324,12 +2714,160 @@
       render(); // Redraw without agents
     });
     
+    // Menu bar dropdown logic
+    const menuFile = document.getElementById('menu-file');
+    const fileDropdown = document.getElementById('file-dropdown');
+    const menuSave = document.getElementById('menu-save');
+    const menuLoad = document.getElementById('menu-load');
+    
+    // Toggle dropdown on click
+    menuFile.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileDropdown.classList.toggle('active');
+    });
+    
+    // Close dropdown when clicking elsewhere
+    document.addEventListener('click', () => {
+      fileDropdown.classList.remove('active');
+    });
+    
+    // Menu actions
+    menuSave.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileDropdown.classList.remove('active');
+      saveSequence();
+    });
+    
+    menuLoad.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileDropdown.classList.remove('active');
+      loadSequence();
+    });
+    
+    // Keyboard navigation: Arrow keys to cycle through notes OR links (depending on current selection)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        
+        // Determine which type to cycle through based on current selection
+        const cycleNotes = selectedNote !== null || selectedLink === null;
+        
+        // Build list of selectable items of the same type
+        const selectables = [];
+        
+        if (cycleNotes) {
+          // Cycle through notes only
+          for (const note of notes.values()) {
+            selectables.push({ type: 'note', data: note });
+          }
+        } else {
+          // Cycle through links only
+          for (const note of notes.values()) {
+            for (let i = 0; i < note.links.length; i++) {
+              selectables.push({ 
+                type: 'link', 
+                data: { sourceNote: note, link: note.links[i], linkIndex: i }
+              });
+            }
+          }
+        }
+        
+        if (selectables.length === 0) return;
+        
+        // Find current selection index
+        let currentIndex = -1;
+        if (selectedNote) {
+          currentIndex = selectables.findIndex(s => s.type === 'note' && s.data === selectedNote);
+        } else if (selectedLink) {
+          currentIndex = selectables.findIndex(s => 
+            s.type === 'link' && 
+            s.data.sourceNote === selectedLink.sourceNote && 
+            s.data.linkIndex === selectedLink.linkIndex
+          );
+        }
+        
+        // Calculate next index
+        let nextIndex;
+        if (e.key === 'ArrowLeft') {
+          // ArrowLeft: go backward
+          nextIndex = currentIndex <= 0 ? selectables.length - 1 : currentIndex - 1;
+        } else {
+          // ArrowRight: go forward
+          nextIndex = currentIndex >= selectables.length - 1 ? 0 : currentIndex + 1;
+        }
+        
+        // Select next item
+        const next = selectables[nextIndex];
+        if (next.type === 'note') {
+          selectedNote = next.data;
+          selectedLink = null;
+        } else {
+          selectedLink = next.data;
+          selectedNote = null;
+        }
+        
+        updatePropertiesSidebar();
+        render();
+      }
+      
+      // Tab key: toggle between note and its links
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        
+        if (selectedNote) {
+          // Switch from note to first link from that note
+          if (selectedNote.links.length > 0) {
+            selectedLink = {
+              sourceNote: selectedNote,
+              link: selectedNote.links[0],
+              linkIndex: 0
+            };
+            selectedNote = null;
+            updatePropertiesSidebar();
+            render();
+          }
+        } else if (selectedLink) {
+          // Switch from link to its source note
+          selectedNote = selectedLink.sourceNote;
+          selectedLink = null;
+          updatePropertiesSidebar();
+          render();
+        }
+      }
+      
+      // Escape key: deselect and show default properties
+      if (e.key === 'Escape') {
+        selectedNote = null;
+        selectedLink = null;
+        updatePropertiesSidebar();
+        render();
+      }
+      
+      // Delete key: delete selected note or link
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedNote) {
+          // Delete selected note
+          const key = posKey(selectedNote.x, selectedNote.y);
+          notes.delete(key);
+          selectedNote = null;
+          updatePropertiesSidebar();
+          render();
+        } else if (selectedLink) {
+          // Delete selected link
+          selectedLink.sourceNote.links.splice(selectedLink.linkIndex, 1);
+          selectedLink = null;
+          updatePropertiesSidebar();
+          render();
+        }
+      }
+    });
+    
     // Prevent transport button events from reaching canvas
     [playBtn, pauseBtn, stopBtn].forEach(btn => {
       btn.addEventListener('mousedown', (e) => e.stopPropagation());
       btn.addEventListener('mouseup', (e) => e.stopPropagation());
     });
-    
+         
     // Initialize properties sidebar with helpful hints
     updatePropertiesSidebar();
     render();
