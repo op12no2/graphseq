@@ -8,7 +8,7 @@ The sequencer is spatially based (non-linear) by default, but areas can become t
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
-Tip: Don't try and predict/design - create a pretty pattern, tweak some probabilities etc and see what happens :)
+Tip: Don't try and predict/design - create a pretty pattern, tweak some note/link settings and see what happens :)
 
 ### Acknowledgements
 
