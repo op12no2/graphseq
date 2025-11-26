@@ -24,7 +24,7 @@ Then for each link in each group it applies the link ```probability``` to whittl
 
 Next it picks one link in each group (in any) based on link ```weight``` and discards the other contenders. 
 
-Then it self-replicates making a replicant for _the_ link in each group (if any) and after waiting a while based on note ```hold```, pushes the replicants into the links at a location based on link ```phase```.
+Then it self-replicates making a replicant for _the_ link in each group (if any) and after optionally waiting a while based on note ```hold```, pushes the replicants into the links at a location based on link ```phase``` and waves goodbye.
 
 Finally it kills itself. An agent never performs more than one note. Sad.
 
