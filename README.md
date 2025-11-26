@@ -12,7 +12,7 @@ https://op12no2.github.io/graphseq/sequencer.html
 
 This is a bit flowery, but it's how I think about it and exactly how it's implemented in fact.  
 
-When you click Play ```agents``` are born at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle.
+When you click Play ```agents``` are born at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle on/off.
 
 When an agent reaches a note (including the above context), the first thing it does is gate the note on at the specified ```pitch``` and ```velocity``` using the appropriate MIDI ```channel```. It does not do this if the note's ```monophonic``` checkbox is ticked and there already a note gated at the same pitch.
 
