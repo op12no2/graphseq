@@ -410,6 +410,32 @@
       text-align: center;
     }
     
+    #graph-counter {
+      position: fixed;
+      top: 28px;
+      left: 50%;
+      transform: translateX(250px);
+      height: 32px;
+      padding: 0 12px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #888;
+      font-size: 14px;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 100;
+      user-select: none;
+    }
+    
+    #graph-value {
+      color: #4ecdc4;
+      min-width: 80px;
+      text-align: center;
+    }
+    
     #bpm-display:hover {
       background: rgba(255, 255, 255, 0.05);
       border-color: #444;
@@ -686,6 +712,9 @@
       <button class="transport-btn" id="pause-btn" title="Pause" disabled>⏸</button>
       <button class="transport-btn" id="stop-btn" title="Stop" disabled>⏹</button>
     </div>
+    <div id="graph-counter" title="notes : links : agents">
+      <span id="graph-value">0:0:0</span>
+    </div>
     <div id="beat-counter" title="bar : 1/4 note : 1/16 note">
       <span id="beat-value">1:1:1</span>
     </div>
@@ -759,7 +788,7 @@
       velocity: 64,        // -6dB (standard default)
       shape: 'circle',
       color: '#3867d6',    // Lovely blue (8th color in palette)
-      size: 8,
+      size: 10,
       isStart: false,      // Never copy root status to new notes
       monophonic: false,   // Skip trigger if pitch already playing
       hold: 0              // Wait for 0-100% of duration before spawning agents
@@ -975,7 +1004,7 @@
     
     // Settings
     let settings = {
-      version: "0.2",
+      version: "0.4",
       // Graph settings
       theme: 'dark',
       backgroundColor: themes.dark.backgroundColor,
@@ -983,7 +1012,7 @@
       linkColor: themes.dark.linkColor,
       teleportLinkColor: themes.dark.teleportLinkColor,
       noteColor: '#3867d6', // 8th color in palette - lovely blue
-      noteSize: 8,
+      noteSize: 10,
       noteShape: 'circle',
       
       // Default note properties (for creating new notes)
@@ -1011,7 +1040,7 @@
       
       // Link property limits
       linkMaxGroups: 10, // Maximum group ID (0-10)
-      linkMaxWeight: 10, // Maximum weight value (0-10, 0 = equal if all are 0)
+      linkMaxWeight: 100, // Maximum weight value (0-100, 0 = equal if all are 0)
       
       // Link probability visual feedback
       linkProbabilityMinBrightness: 50,  // rgb value at 0% probability (dark gray)
@@ -1025,6 +1054,10 @@
       selectionBoxLineWidth: 1, // Selection box stroke width
       selectionBoxXSize: 10, // Size of X marker at center of selection box
       bidirectionalLinkOffset: 3, // Perpendicular offset for bidirectional links
+      
+      // Note size limits
+      noteMinSize: 4, // Minimum note size
+      noteMaxSize: 20, // Maximum note size
       
       // Timing
       playStartDelay: 250, // ms delay before playback starts (gives user a moment)
@@ -1562,7 +1595,7 @@
     }
     
     function drawGrid() {
-      ctx.lineWidth = settings.gridLineWidth / zoom; // Keep line width consistent regardless of zoom
+      ctx.lineWidth = settings.gridLineWidth / zoom;
       
       // Calculate visible world bounds
       const topLeft = screenToWorld(0, 0);
@@ -1577,7 +1610,7 @@
       // Vertical lines (with beat emphasis every 4 lines = quarter note)
       for (let x = startX; x <= endX; x += gridSpacing) {
         const gridIndex = Math.round(x / gridSpacing);
-        const isBeatLine = gridIndex % 4 === 0; // Every 4th line = quarter note
+        const isBeatLine = gridIndex % 4 === 0;
         
         if (isBeatLine) {
           ctx.strokeStyle = lightenColor(settings.gridColor, 0.3);
@@ -1854,6 +1887,7 @@
       propertiesContent.innerHTML = `
         <h3>Note Properties</h3>
         
+        <!-- MIDI PROPERTIES -->
         <div class="property-section">
           <div class="property-label">Pitch</div>
           <div class="note-grid">
@@ -1866,32 +1900,6 @@
               <button class="octave-btn ${oct === octave ? 'selected' : ''}" data-octave="${oct}">${oct}</button>
             `).join('')}
           </div>
-        </div>
-        
-        <div class="property-section">
-          <div class="property-label">Color</div>
-          <div class="color-grid" style="display: grid; grid-template-columns: repeat(4, ${settings.colorSwatchSize}px); gap: 4px; justify-content: center; margin-top: 8px;">
-            ${colorPalette.map((color, i) => `
-              <div class="color-swatch ${color === (note.color || settings.noteColor) ? 'selected' : ''}" 
-                   data-color="${color}"
-                   style="width: ${settings.colorSwatchSize}px; 
-                          height: ${settings.colorSwatchSize}px; 
-                          background: ${color}; 
-                          border: 2px solid ${color === (note.color || settings.noteColor) ? '#fff' : '#444'};
-                          border-radius: 3px;
-                          cursor: pointer;
-                          transition: all 0.1s;">
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        
-        <div class="property-section">
-          <div class="property-label">Shape</div>
-          <input type="range" class="property-slider" min="0" max="5" step="1" 
-                 value="${['circle', 'square', 'diamond', 'triangle', 'hexagon', 'star'].indexOf(note.shape || 'circle')}" 
-                 data-property="shape">
-          <div class="property-value">${note.shape || 'circle'}</div>
         </div>
         
         <div class="property-section">
@@ -1929,8 +1937,9 @@
           <div class="property-value">${note.channel || 0}</div>
         </div>
         
-        <div class="property-section">
-          <div class="property-label">Hold (0-100%)</div>
+        <!-- CONTROL PROPERTIES -->
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <div class="property-label">Hold</div>
           <input type="range" class="property-slider" min="0" max="100" step="1" 
                  value="${note.hold || 0}" data-property="hold">
           <div class="property-value">${note.hold || 0}%</div>
@@ -1939,10 +1948,45 @@
         <div class="property-section">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="checkbox" data-property="monophonic" ${note.monophonic ? 'checked' : ''}>
-            <span>Monophonic (skip if playing)</span>
+            <span>Monophonic</span>
           </label>
         </div>
         
+        <!-- STYLE PROPERTIES -->
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <div class="property-label">Color</div>
+          <div class="color-grid" style="display: grid; grid-template-columns: repeat(4, ${settings.colorSwatchSize}px); gap: 4px; justify-content: center; margin-top: 8px;">
+            ${colorPalette.map((color, i) => `
+              <div class="color-swatch ${color === (note.color || settings.noteColor) ? 'selected' : ''}" 
+                   data-color="${color}"
+                   style="width: ${settings.colorSwatchSize}px; 
+                          height: ${settings.colorSwatchSize}px; 
+                          background: ${color}; 
+                          border: 2px solid ${color === (note.color || settings.noteColor) ? '#fff' : '#444'};
+                          border-radius: 3px;
+                          cursor: pointer;
+                          transition: all 0.1s;">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Size</div>
+          <input type="range" class="property-slider" min="${settings.noteMinSize}" max="${settings.noteMaxSize}" step="1" 
+                 value="${note.size || settings.noteSize}" data-property="size">
+          <div class="property-value">${note.size || settings.noteSize}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Shape</div>
+          <input type="range" class="property-slider" min="0" max="5" step="1" 
+                 value="${['circle', 'square', 'diamond', 'triangle', 'hexagon', 'star'].indexOf(note.shape || 'circle')}" 
+                 data-property="shape">
+          <div class="property-value">${note.shape || 'circle'}</div>
+        </div>
+        
+        <!-- ACTION BUTTONS -->
         <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
           <button class="property-button property-button-warning" data-action="clear-links">Clear Links</button>
           <button class="property-button property-button-danger" data-action="delete-note">Delete Note</button>
@@ -1959,28 +2003,28 @@
         <h3>Link Properties</h3>
         
         <div class="property-section">
-          <div class="property-label">Group (0-${settings.linkMaxGroups})</div>
+          <div class="property-label">Group</div>
           <input type="range" class="property-slider" min="0" max="${settings.linkMaxGroups}" step="1" 
                  value="${link.group !== undefined ? link.group : 0}" data-property="group">
           <div class="property-value">${link.group !== undefined ? link.group : 0}</div>
         </div>
         
         <div class="property-section">
-          <div class="property-label">Probability (0-100%)</div>
+          <div class="property-label">Probability</div>
           <input type="range" class="property-slider" min="0" max="100" step="1" 
                  value="${link.probability !== undefined ? link.probability : 100}" data-property="probability">
           <div class="property-value">${link.probability !== undefined ? link.probability : 100}%</div>
         </div>
         
         <div class="property-section">
-          <div class="property-label">Weight (0-${settings.linkMaxWeight})</div>
+          <div class="property-label">Weight</div>
           <input type="range" class="property-slider" min="0" max="${settings.linkMaxWeight}" step="1" 
                  value="${link.weight !== undefined ? link.weight : 1}" data-property="weight">
           <div class="property-value">${link.weight !== undefined ? link.weight : 1}</div>
         </div>
         
         <div class="property-section">
-          <div class="property-label">Phase (0-100%)</div>
+          <div class="property-label">Phase</div>
           <input type="range" class="property-slider" min="0" max="100" step="1" 
                  value="${link.phase || 0}" data-property="phase">
           <div class="property-value">${link.phase || 0}%</div>
@@ -2204,6 +2248,15 @@
           const action = btn.dataset.action;
           if (action === 'delete-note') {
             const key = posKey(note.x, note.y);
+            
+            // Remove all links pointing TO this note from other notes
+            for (const otherNote of notes.values()) {
+              otherNote.links = otherNote.links.filter(link => 
+                !(link.x === note.x && link.y === note.y)
+              );
+            }
+            
+            // Delete the note itself
             notes.delete(key);
             selectedNote = null;
             updatePropertiesSidebar();
@@ -2495,6 +2548,11 @@
           // Update display
           const beatValue = document.getElementById('beat-value');
           beatValue.textContent = `${bar}:${quarter}:${sixteenth}`;
+          
+          // Update graph counter (notes:links:agents)
+          const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
+          const graphValue = document.getElementById('graph-value');
+          graphValue.textContent = `${notes.size}:${totalLinks}:${agents.length}`;
         }
         
         updateAgents(deltaTime);
@@ -2892,6 +2950,11 @@
       activeNotes.length = 0;
       
       document.getElementById('beat-value').textContent = '1:1:1';
+      
+      // Update graph counter
+      const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
+      document.getElementById('graph-value').textContent = `${notes.size}:${totalLinks}:${agents.length}`;
+      
       render(); // Redraw without agents
     });
     
@@ -2901,18 +2964,19 @@
     const menuSave = document.getElementById('menu-save');
     const menuLoad = document.getElementById('menu-load');
     
-    // Toggle dropdown on click
+    
+    // Toggle File dropdown on click
     menuFile.addEventListener('click', (e) => {
       e.stopPropagation();
       fileDropdown.classList.toggle('active');
     });
     
-    // Close dropdown when clicking elsewhere
+    // Close dropdowns when clicking elsewhere
     document.addEventListener('click', () => {
       fileDropdown.classList.remove('active');
     });
     
-    // Menu actions
+    // File menu actions
     menuSave.addEventListener('click', (e) => {
       e.stopPropagation();
       fileDropdown.classList.remove('active');
@@ -3050,6 +3114,15 @@
         if (selectedNote) {
           // Delete selected note
           const key = posKey(selectedNote.x, selectedNote.y);
+          
+          // Remove all links pointing TO this note from other notes
+          for (const otherNote of notes.values()) {
+            otherNote.links = otherNote.links.filter(link => 
+              !(link.x === selectedNote.x && link.y === selectedNote.y)
+            );
+          }
+          
+          // Delete the note itself
           notes.delete(key);
           selectedNote = null;
           updatePropertiesSidebar();
