@@ -4,7 +4,14 @@ WIP. Usable but probably buggy.
 
 On start up the sequencer tries to connect to MIDI via loopMIDI or macOS virtual ports and falls back on Web Audio if that fails (just using a sine wave as a preview).
 
-The sequencer is spatially based by default, but areas can become temporally based by the use of link ```phase``` and/or note ```hold```.
+The sequencer is spatially based (non-linear) by default, but areas can become temporally based (linear) by the use of link ```phase``` and/or note ```hold```.
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
+Tip: Don't try and predict/design - create a pretty pattern, tweak some probabilities etc and see what happens :)
+
+### Acknowledgements
+
+- https://midinous.com/ - inspiration
+- https://www.youtube.com/@tachesteaches  - inspiration
+- https://claude.ai - patiently performing endless refectors
