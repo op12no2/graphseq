@@ -22,7 +22,7 @@ First of all it collects output links into groups based on link ```group```.
 
 Then for each link in each group it applies the link ```probability``` to whittle things down a little. Some groups may disappear in the process. In fact all groups may disappear.
 
-Next it picks one link in each group (in any) based on link ```weight``` and discards the others. 
+Next it picks one link in each group (in any) based on link ```weight``` and discards the other contenders. 
 
 Then it self-replicates making a replicant for _the_ link in each group (if any) and after waiting a while based on note ```hold```, pushes the replicants into the links at a location based on link ```phase```.
 
