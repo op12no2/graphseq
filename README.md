@@ -17,7 +17,4 @@ On reaching a note, the outgoing links are evaluated as follows:-
 3. Replicate the agent and squirt the replicants into these selected links based on link ```phase```.
 4. Kill the original agent.
 
-This is the default behaviour. The next step is to add rule sets that are evaluated and actioned; which will include self/neighbour note/link creation/modification and movement.
-
-
-
+This is the default behaviour. The next step is to add user-defined rules that are evaluated and actioned; which will include self/neighbour note/link creation/modification and movement.
