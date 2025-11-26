@@ -1789,6 +1789,14 @@
         </div>
         
         <div class="property-section">
+          <div class="property-label">Shape</div>
+          <input type="range" class="property-slider" min="0" max="5" step="1" 
+                 value="${['circle', 'square', 'diamond', 'triangle', 'hexagon', 'star'].indexOf(note.shape || 'circle')}" 
+                 data-property="shape">
+          <div class="property-value">${note.shape || 'circle'}</div>
+        </div>
+        
+        <div class="property-section">
           <div class="property-label">Duration</div>
           <select class="property-select" data-property="duration">
             <option value="0.0625" ${(note.duration || 0.25) === 0.0625 ? 'selected' : ''}>1/16</option>
@@ -2010,10 +2018,19 @@
         const updateValue = () => {
           const prop = slider.dataset.property;
           const value = parseFloat(slider.value);
-          note[prop] = value;
           
-          const valueDisplay = slider.nextElementSibling;
-          valueDisplay.textContent = formatPropertyValue(prop, value);
+          // Special handling for shape property
+          if (prop === 'shape') {
+            const shapes = ['circle', 'square', 'diamond', 'triangle', 'hexagon', 'star'];
+            note[prop] = shapes[value];
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = shapes[value];
+          } else {
+            note[prop] = value;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = formatPropertyValue(prop, value);
+          }
+          
           updateNoteTemplate(note);
           render();
         };
