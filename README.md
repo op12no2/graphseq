@@ -14,4 +14,4 @@ Tip: Don't try and predict/design - create a pretty pattern, tweak some probabil
 
 - https://midinous.com/ - inspiration
 - https://www.youtube.com/@tachesteaches  - inspiration
-- https://claude.ai - patiently performing endless refectors
+- https://claude.ai - patiently performing endless refactors
