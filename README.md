@@ -32,9 +32,9 @@ In the background, helper agents are monitoring the notes playing, gating them o
 
 ### Discussion
 
-I have deliberately resisted adding capabilities for notes to play chords (sic) or random notes etc. It can all be done with the existing feature set and additionally you can then connect bits of the chord beack into the graph with a low probability.  
+I have deliberately resisted adding capabilities for notes to fire chords or random notes etc. It can all be done with the existing feature set and additionally you can then connect bits of the chord beack into the graph with a low probability.  
 
-To model a chord, create a note C0 with velocity 0 and link satellite notes C1 to Cn. Adjust the links to C1 to Cn to have a phase of 100 and have unique group numbers. It doesn't matter where they are geographically because the phase is 100. Now when C0 fires, C1 to Cn will also fire at the same time; well, one tick later (a few ms). Similarly, to make one of C1 to CN fire randomly, set all the links to the same group and one will be picked. Adjust weights to make some fire more often than others. Or for some to fire, adjust the probabilities down so a few never get a chance to be chosen. It takes a while to get used to it, but it's fun. In the future I'll add shortcuts to add common graph segments, rather then pile up note features.
+To model a chord, create a note C0 with velocity 0 and link satellite notes C1 to Cn. Adjust the links to have a phase of 100 and unique group numbers. It doesn't matter where they are geographically because the phase is 100. Now when C0 fires, C1 to Cn will also fire at the same time; well, one tick later (a few ms). Similarly, to make one of C1 to CN fire randomly, set all the links to the same group and one will be picked. Adjust weights to make some fire more often than others. Or for just some to fire, adjust the probabilities down so a few never get a chance to be chosen. It takes a while to get used to it, but it's fun. In the future I'll add shortcuts to paste common graph segments from a library, rather then pile up note features. Having said that the next tweak is to add note, link and agent ```rules``` which can not only modify properties but create and delete notes/links/rules. One-off rules can create useful satellite notes that are used thereafter etc.
 
 ### Acknowledgements
 
