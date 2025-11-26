@@ -1,6 +1,6 @@
 # MIDI graph sequencer
 
-WIP.
+WIP. Usable but probably buggy.
 
 On start up the sequencer tries to connect to MIDI via loopMIDI or macOS virtual ports and falls back on Web Audio if that fails (just using a sine wave as a preview).
 
@@ -18,3 +18,5 @@ On reaching a note, the outgoing links are evaluated as follows:-
 4. Kill the original agent.
 
 This is the default behaviour. The next step is to add user-defined rules that are evaluated and actioned; which will include self/neighbour note/link creation/modification and movement.
+
+The example ````.json```` files in the repo can be downloaded and loaded into the sequencer via the ```File``` menu.
