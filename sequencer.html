@@ -760,7 +760,9 @@
       shape: 'circle',
       color: '#3867d6',    // Lovely blue (8th color in palette)
       size: 8,
-      isStart: false       // Never copy root status to new notes
+      isStart: false,      // Never copy root status to new notes
+      monophonic: false,   // Skip trigger if pitch already playing
+      hold: 0              // Wait for 0-100% of duration before spawning agents
     };
     
     let lastLinkTemplate = {
@@ -808,33 +810,37 @@
         const freq = this.midiToFreq(midiNote);
         const osc = this.context.createOscillator();
         const gain = this.context.createGain();
-        const filter = this.context.createBiquadFilter();
         
-        // Configure oscillator (slightly detuned for richness)
-        osc.type = 'triangle'; // Warmer than sine, less harsh than square
+        // Configure oscillator
+        osc.type = settings.synthOscillatorType;
         osc.frequency.value = freq;
         
-        // Configure filter (low-pass for softer sound)
-        filter.type = 'lowpass';
-        filter.frequency.value = freq * 4;
-        filter.Q.value = 1;
-        
-        // Configure envelope (ADSR-lite)
-        const vol = (velocity / 127) * 0.15; // Scale volume (quieter for comfort)
+        // Configure envelope (ADSR)
+        const vol = (velocity / 127) * settings.synthVolume;
         const now = this.context.currentTime;
-        const attack = 0.01;
-        const decay = 0.1;
-        const sustain = vol * 0.7;
-        const release = 0.1;
+        const attack = settings.synthAttack;
+        const decay = settings.synthDecay;
+        const sustain = vol * settings.synthSustain;
+        const release = settings.synthRelease;
         
         // Attack-Decay-Sustain
         gain.gain.setValueAtTime(0, now);
         gain.gain.linearRampToValueAtTime(vol, now + attack);
         gain.gain.linearRampToValueAtTime(sustain, now + attack + decay);
         
-        // Connect: osc -> filter -> gain -> destination
-        osc.connect(filter);
-        filter.connect(gain);
+        // Connect audio graph
+        if (settings.synthFilterEnabled) {
+          // With filter: osc -> filter -> gain -> destination
+          const filter = this.context.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = freq * settings.synthFilterMultiplier;
+          filter.Q.value = settings.synthFilterQ;
+          osc.connect(filter);
+          filter.connect(gain);
+        } else {
+          // Direct: osc -> gain -> destination
+          osc.connect(gain);
+        }
         gain.connect(this.context.destination);
         
         // Start playing
@@ -1017,7 +1023,22 @@
       selectionBoxDashPattern: [4, 4], // Dotted pattern for selection box
       selectionBoxColor: '#aaaaaa', // Selection box color (darker gray)
       selectionBoxLineWidth: 1, // Selection box stroke width
+      selectionBoxXSize: 10, // Size of X marker at center of selection box
       bidirectionalLinkOffset: 3, // Perpendicular offset for bidirectional links
+      
+      // Timing
+      playStartDelay: 250, // ms delay before playback starts (gives user a moment)
+      
+      // Web Audio synth (fallback when MIDI unavailable)
+      synthOscillatorType: 'triangle', // Oscillator waveform: sine, triangle, square, sawtooth
+      synthVolume: 0.15, // Master volume (0.0-1.0)
+      synthAttack: 0.01, // Attack time in seconds
+      synthDecay: 0.1, // Decay time in seconds
+      synthSustain: 0.7, // Sustain level (0.0-1.0)
+      synthRelease: 0.1, // Release time in seconds
+      synthFilterEnabled: false, // Enable lowpass filter
+      synthFilterMultiplier: 4, // Filter frequency = note frequency * this
+      synthFilterQ: 1, // Filter resonance
       
       // System settings
       bpm: 120
@@ -1109,7 +1130,9 @@
         shape: lastNoteTemplate.shape,
         color: lastNoteTemplate.color,
         size: lastNoteTemplate.size,
-        isStart: false  // New notes are never root notes
+        isStart: false,  // New notes are never root notes
+        monophonic: lastNoteTemplate.monophonic,
+        hold: lastNoteTemplate.hold
       };
     }
     
@@ -1170,6 +1193,14 @@
     }
     
     function triggerNoteSound(note) {
+      // Monophonic mode: skip trigger if this pitch is already playing
+      if (note.monophonic) {
+        const isPlaying = activeNotes.some(active => active.midiNote === note.midiNote);
+        if (isPlaying) {
+          return; // Skip trigger - let existing note ring
+        }
+      }
+      
       // Mark note as just fired for visual feedback
       note.lastFireTime = performance.now();
       
@@ -1305,26 +1336,68 @@
             agent.x = agent.targetX;
             agent.y = agent.targetY;
             
-            // Trigger MIDI and visual feedback
-            triggerNoteSound(agent.targetNote);
-            
-            // Process all links - spawn new agents based on group/probability
-            const spawns = processLinks(agent.targetNote, agent.targetNote.links, agent.color);
-            
-            // Trigger sounds for agents spawned at progress>=1 (instant arrival)
-            for (const spawn of spawns) {
-              if (spawn.progress >= 1) {
-                triggerNoteSound(spawn.targetNote);
+            // Check if agent is holding at note
+            if (agent.holdTime !== undefined) {
+              // Agent is waiting - update hold timer
+              agent.holdTime += deltaTime;
+              
+              const note = agent.targetNote;
+              const holdPercent = (note.hold || 0) / 100;
+              const durationBeats = note.duration || 0.25;
+              const durationMs = durationBeats * (240000 / settings.bpm);
+              const holdDurationMs = durationMs * holdPercent;
+              
+              if (agent.holdTime >= holdDurationMs) {
+                // Hold complete - spawn new agents and die
+                const spawns = processLinks(agent.targetNote, agent.targetNote.links, agent.color);
+                
+                // Trigger sounds for agents spawned at progress>=1 (instant arrival)
+                for (const spawn of spawns) {
+                  if (spawn.progress >= 1) {
+                    triggerNoteSound(spawn.targetNote);
+                  }
+                }
+                
+                // All spawns become new agents
+                for (const spawn of spawns) {
+                  agents.push(spawn);
+                }
+                
+                // Original agent dies
+                agents.splice(i, 1);
+              }
+              // else: continue holding, don't remove agent yet
+            } else {
+              // Just arrived - trigger note sound
+              triggerNoteSound(agent.targetNote);
+              
+              const note = agent.targetNote;
+              const holdPercent = (note.hold || 0) / 100;
+              
+              if (holdPercent > 0) {
+                // Start holding
+                agent.holdTime = 0;
+                // Don't spawn or remove yet
+              } else {
+                // No hold - spawn immediately and die
+                const spawns = processLinks(agent.targetNote, agent.targetNote.links, agent.color);
+                
+                // Trigger sounds for agents spawned at progress>=1 (instant arrival)
+                for (const spawn of spawns) {
+                  if (spawn.progress >= 1) {
+                    triggerNoteSound(spawn.targetNote);
+                  }
+                }
+                
+                // All spawns become new agents
+                for (const spawn of spawns) {
+                  agents.push(spawn);
+                }
+                
+                // Original agent dies
+                agents.splice(i, 1);
               }
             }
-            
-            // All spawns become new agents
-            for (const spawn of spawns) {
-              agents.push(spawn);
-            }
-            
-            // Original agent dies (remove from array)
-            agents.splice(i, 1);
         }
         else if (totalDistance > 0) {
           // Interpolate position from START to TARGET (only if moving)
@@ -1359,6 +1432,18 @@
     
     function posKey(x, y) {
       return `${x},${y}`;
+    }
+    
+    // Sort a note's links by angle (clockwise from top) for predictable arrow key navigation
+    function sortNoteLinks(note) {
+      if (!note.links || note.links.length <= 1) return; // No sorting needed
+      
+      note.links.sort((a, b) => {
+        // Calculate angles from note to each link target
+        const angleA = Math.atan2(a.y - note.y, a.x - note.x);
+        const angleB = Math.atan2(b.y - note.y, b.x - note.x);
+        return angleA - angleB;
+      });
     }
     
     function snapToGrid(x, y) {
@@ -1812,11 +1897,21 @@
         <div class="property-section">
           <div class="property-label">Duration</div>
           <select class="property-select" data-property="duration">
+            <option value="0.0078125" ${(note.duration || 0.25) === 0.0078125 ? 'selected' : ''}>1/128</option>
+            <option value="0.015625" ${(note.duration || 0.25) === 0.015625 ? 'selected' : ''}>1/64</option>
+            <option value="0.03125" ${(note.duration || 0.25) === 0.03125 ? 'selected' : ''}>1/32</option>
             <option value="0.0625" ${(note.duration || 0.25) === 0.0625 ? 'selected' : ''}>1/16</option>
             <option value="0.125" ${(note.duration || 0.25) === 0.125 ? 'selected' : ''}>1/8</option>
             <option value="0.25" ${(note.duration || 0.25) === 0.25 ? 'selected' : ''}>1/4</option>
             <option value="0.5" ${(note.duration || 0.25) === 0.5 ? 'selected' : ''}>1/2</option>
-            <option value="1.0" ${(note.duration || 0.25) === 1.0 ? 'selected' : ''}>1/1</option>
+            <option value="1.0" ${(note.duration || 0.25) === 1.0 ? 'selected' : ''}>1</option>
+            <option value="2.0" ${(note.duration || 0.25) === 2.0 ? 'selected' : ''}>2</option>
+            <option value="4.0" ${(note.duration || 0.25) === 4.0 ? 'selected' : ''}>4</option>
+            <option value="8.0" ${(note.duration || 0.25) === 8.0 ? 'selected' : ''}>8</option>
+            <option value="16.0" ${(note.duration || 0.25) === 16.0 ? 'selected' : ''}>16</option>
+            <option value="32.0" ${(note.duration || 0.25) === 32.0 ? 'selected' : ''}>32</option>
+            <option value="64.0" ${(note.duration || 0.25) === 64.0 ? 'selected' : ''}>64</option>
+            <option value="128.0" ${(note.duration || 0.25) === 128.0 ? 'selected' : ''}>128</option>
           </select>
         </div>
         
@@ -1832,6 +1927,20 @@
           <input type="range" class="property-slider" min="0" max="15" step="1" 
                  value="${note.channel || 0}" data-property="channel">
           <div class="property-value">${note.channel || 0}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Hold (0-100%)</div>
+          <input type="range" class="property-slider" min="0" max="100" step="1" 
+                 value="${note.hold || 0}" data-property="hold">
+          <div class="property-value">${note.hold || 0}%</div>
+        </div>
+        
+        <div class="property-section">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" data-property="monophonic" ${note.monophonic ? 'checked' : ''}>
+            <span>Monophonic (skip if playing)</span>
+          </label>
         </div>
         
         <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
@@ -1937,17 +2046,31 @@
     }
     
     function formatDuration(beats) {
-      if (beats >= 1) return '1/1';
+      // Long durations (drones)
+      if (beats >= 128) return '128';
+      if (beats >= 64) return '64';
+      if (beats >= 32) return '32';
+      if (beats >= 16) return '16';
+      if (beats >= 8) return '8';
+      if (beats >= 4) return '4';
+      if (beats >= 2) return '2';
+      if (beats >= 1) return '1';
+      // Standard durations
       if (beats >= 0.5) return '1/2';
       if (beats >= 0.25) return '1/4';
       if (beats >= 0.125) return '1/8';
-      return '1/16';
+      if (beats >= 0.0625) return '1/16';
+      // Short durations (triggers)
+      if (beats >= 0.03125) return '1/32';
+      if (beats >= 0.015625) return '1/64';
+      return '1/128';
     }
     
     function formatPropertyValue(prop, value) {
       if (prop === 'duration') return formatDuration(value);
       if (prop === 'phase') return `${value}%`;
       if (prop === 'probability') return `${value}%`;
+      if (prop === 'hold') return `${value}%`;
       return value;
     }
     
@@ -1960,7 +2083,9 @@
         velocity: note.velocity,
         shape: note.shape,
         color: note.color,
-        size: note.size
+        size: note.size,
+        monophonic: note.monophonic,
+        hold: note.hold
       };
     }
     
@@ -2236,12 +2361,25 @@
         // Draw box around selected note
         const size = selectedNote.size || settings.noteSize;
         const boxSize = size * 2 + settings.selectionBoxPaddingNote;
+        const centerX = selectedNote.x;
+        const centerY = selectedNote.y;
+        
         ctx.strokeRect(
-          selectedNote.x - boxSize / 2,
-          selectedNote.y - boxSize / 2,
+          centerX - boxSize / 2,
+          centerY - boxSize / 2,
           boxSize,
           boxSize
         );
+        
+        // Draw X marker at center
+        const xSize = settings.selectionBoxXSize;
+        ctx.beginPath();
+        ctx.moveTo(centerX - xSize / 2, centerY - xSize / 2);
+        ctx.lineTo(centerX + xSize / 2, centerY + xSize / 2);
+        ctx.moveTo(centerX + xSize / 2, centerY - xSize / 2);
+        ctx.lineTo(centerX - xSize / 2, centerY + xSize / 2);
+        ctx.stroke();
+        
       } else if (selectedLink) {
         // Draw box around selected link center
         const sourceNote = selectedLink.sourceNote;
@@ -2290,6 +2428,15 @@
             boxSize,
             boxSize
           );
+          
+          // Draw X marker at center
+          const xSize = settings.selectionBoxXSize;
+          ctx.beginPath();
+          ctx.moveTo(centerX - xSize / 2, centerY - xSize / 2);
+          ctx.lineTo(centerX + xSize / 2, centerY + xSize / 2);
+          ctx.moveTo(centerX + xSize / 2, centerY - xSize / 2);
+          ctx.lineTo(centerX - xSize / 2, centerY + xSize / 2);
+          ctx.stroke();
         }
       }
       
@@ -2430,6 +2577,7 @@
           if (note) {
             selectedNote = note;
             selectedLink = null;
+            sortNoteLinks(note); // Sort links for predictable arrow key navigation
             updatePropertiesSidebar();
             
             // Also allow dragging
@@ -2460,6 +2608,7 @@
         // Auto-select the newly created note
         selectedNote = note;
         selectedLink = null;
+        sortNoteLinks(note); // Sort links for predictable arrow key navigation
         updatePropertiesSidebar();
         
         render();
@@ -2707,7 +2856,7 @@
           triggerRootNotes();
           spawnAgentsFromStartNotes();
         }
-      }, 250);
+      }, settings.playStartDelay);
     });
     
     pauseBtn.addEventListener('click', (e) => {
@@ -2778,7 +2927,17 @@
     
     // Keyboard navigation: Arrow keys to cycle through notes OR links (depending on current selection)
     window.addEventListener('keydown', (e) => {
+      // Don't handle keyboard shortcuts if typing in text fields
+      const activeElement = document.activeElement;
+      const isTyping = activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA'
+      );
+      
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        // Allow arrow keys in text fields
+        if (isTyping) return;
+        
         e.preventDefault();
         
         // Determine which type to cycle through based on current selection
@@ -2833,6 +2992,7 @@
         if (next.type === 'note') {
           selectedNote = next.data;
           selectedLink = null;
+          sortNoteLinks(selectedNote); // Sort links for predictable arrow key navigation
         } else {
           selectedLink = next.data;
           selectedNote = null;
@@ -2844,6 +3004,9 @@
       
       // Tab key: toggle between note and its links
       if (e.key === 'Tab') {
+        // Allow Tab in text fields for navigation
+        if (isTyping) return;
+        
         e.preventDefault();
         
         if (selectedNote) {
@@ -2862,6 +3025,7 @@
           // Switch from link to its source note
           selectedNote = selectedLink.sourceNote;
           selectedLink = null;
+          sortNoteLinks(selectedNote); // Sort links for predictable arrow key navigation
           updatePropertiesSidebar();
           render();
         }
@@ -2869,6 +3033,9 @@
       
       // Escape key: deselect and show default properties
       if (e.key === 'Escape') {
+        // Allow Escape in text fields (though it doesn't do anything by default)
+        if (isTyping) return;
+        
         selectedNote = null;
         selectedLink = null;
         updatePropertiesSidebar();
@@ -2877,6 +3044,9 @@
       
       // Delete key: delete selected note or link
       if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Allow Delete/Backspace in text fields for editing
+        if (isTyping) return;
+        
         if (selectedNote) {
           // Delete selected note
           const key = posKey(selectedNote.x, selectedNote.y);
