@@ -42,6 +42,28 @@ You can get similar results by linking C1 to Cn serially - because phase is 100 
 
 Watch out for feedback loops with agents self-replicating out of control as there are no birth control measures in place at the moment. I am finding it's almost impossisble to _design_ anything other than simple graphs, better to make a pretty pattern, tweak some settings and see what happens. Multiple disconnected graphs each with their own root note can be interesting when you arrange each around a different prime number. You can drag notes around and change note/link properties while the sequencer is playing. Deletion also seems to work, but don't be surprised if something very strange happens. There is no _new graph_ capability at the moment; just refresh the browser. Each small square is a 1/16 note (when link phase is 0). There is currently no auto-stop when/if all agents die. The plan is that note/link/agent rule sets will allow the graph to morph while it's being performed; i.e. link/note modfication, movement and creation/deletion. Click Esc to deselect and change the property bar back to a place where you can enter a name and description for your graph. Use the File menu to save it.
 
+### Keyboard assignments (PC-speak)
+
+Double-click grid: create a new note using the properties from the last selected note (if any).
+
+Double-click note: toggle note rootiness (see above).
+
+Ctrl+drag from note to note: create a new link between the notes using the properties from the last selected link (if any). 
+
+Ctrl+drag from note to to grid: create a new note and a new link as above. 
+
+Alt+drag: zoom the grid.
+
+Shift+drag: pan the grid.
+
+←/→: cycle selection to next note or link (whichever is currenty selected)
+
+Tab: toggle netween note selection and link selection WRT ←/→.
+
+Delete: remove selected note/link.
+
+Esc: deselect.
+
 ### Acknowledgements
 
 - https://midinous.com/ - inspiration
