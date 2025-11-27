@@ -2,7 +2,7 @@
 
 WIP. Usable but probably buggy.
 
-On start up the sequencer tries to connect to MIDI via loopMIDI or macOS virtual ports and falls back to Web Audio if that fails. macOS is untested but loopMIDI to Bitwig seems to work fine.
+On start up the sequencer tries to connect to MIDI via loopMIDI or macOS virtual ports and falls back to Web Audio if that fails. 
 
 The sequencer is spatially based by default, but areas can become temporally based by the use of link ```phase``` and/or note ```hold```.
 
