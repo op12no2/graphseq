@@ -2,6 +2,8 @@
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
+[Example 1](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/example_1.json)
+
 ### Keyboard assignments (PC-speak)
 
 Double-click grid: create a new note using the properties from the last selected note (if any).
