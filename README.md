@@ -10,7 +10,7 @@ https://op12no2.github.io/graphseq/sequencer.html
 
 ### Description
 
-This is a bit flowery, but this is exactly how it's implemented.  
+This is a bit flowery, but exactly how it's implemented.  
 
 When you click Play ```agents``` are born at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle rootiness on/off.
 
