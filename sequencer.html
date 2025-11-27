@@ -1463,6 +1463,14 @@
       
       if (midi.useWebAudio) {
         audioSynth.playNote(note.midiNote, velocity, durationMs, channel);
+        
+        // Track active notes for monophonic mode
+        activeNotes.push({
+          midiNote: note.midiNote,
+          channel: channel,
+          graph: note.graph || 0,
+          offTime: performance.now() + durationMs
+        });
       } else {
         midi.sendNote(note.midiNote, velocity, channel);
         
@@ -2986,14 +2994,16 @@
         const deltaTime = lastFrameTime ? timestamp - lastFrameTime : 0;
         lastFrameTime = timestamp;
         
-        // Process note-offs (only needed for MIDI hardware)
-        if (!midi.useWebAudio) {
-          const now = performance.now();
-          for (let i = activeNotes.length - 1; i >= 0; i--) {
-            if (now >= activeNotes[i].offTime) {
+        // Process note-offs and clean up activeNotes
+        const now = performance.now();
+        for (let i = activeNotes.length - 1; i >= 0; i--) {
+          if (now >= activeNotes[i].offTime) {
+            // Send note-off for MIDI hardware
+            if (!midi.useWebAudio) {
               midi.sendNoteOff(activeNotes[i].midiNote, activeNotes[i].channel);
-              activeNotes.splice(i, 1);
             }
+            // Remove from activeNotes for both MIDI and Web Audio (needed for monophonic)
+            activeNotes.splice(i, 1);
           }
         }
         
