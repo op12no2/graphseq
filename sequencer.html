@@ -462,21 +462,26 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      -webkit-text-fill-color: #888; /* Force text color on Chromebook */
     }
     
     .transport-btn:hover {
       color: #ddd;
       background: rgba(255, 255, 255, 0.05);
+      -webkit-text-fill-color: #ddd;
     }
     
     .transport-btn.active {
       color: #4ecdc4;
       background: rgba(78, 205, 196, 0.1);
+      -webkit-text-fill-color: #4ecdc4;
     }
     
     .transport-btn:disabled {
       color: #444;
       cursor: not-allowed;
+      -webkit-text-fill-color: #444;
     }
     
     .transport-btn:disabled:hover {
@@ -696,6 +701,27 @@
         <div class="menu-dropdown-item" id="menu-load">Open</div>
       </div>
     </div>
+    <div class="menu-item" id="menu-webaudio">
+      Web Audio
+      <div class="menu-dropdown" id="webaudio-dropdown">
+        <div class="menu-dropdown-item" data-channel="0">Channel 0</div>
+        <div class="menu-dropdown-item" data-channel="1">Channel 1</div>
+        <div class="menu-dropdown-item" data-channel="2">Channel 2</div>
+        <div class="menu-dropdown-item" data-channel="3">Channel 3</div>
+        <div class="menu-dropdown-item" data-channel="4">Channel 4</div>
+        <div class="menu-dropdown-item" data-channel="5">Channel 5</div>
+        <div class="menu-dropdown-item" data-channel="6">Channel 6</div>
+        <div class="menu-dropdown-item" data-channel="7">Channel 7</div>
+        <div class="menu-dropdown-item" data-channel="8">Channel 8</div>
+        <div class="menu-dropdown-item" data-channel="9">Channel 9</div>
+        <div class="menu-dropdown-item" data-channel="10">Channel 10</div>
+        <div class="menu-dropdown-item" data-channel="11">Channel 11</div>
+        <div class="menu-dropdown-item" data-channel="12">Channel 12</div>
+        <div class="menu-dropdown-item" data-channel="13">Channel 13</div>
+        <div class="menu-dropdown-item" data-channel="14">Channel 14</div>
+        <div class="menu-dropdown-item" data-channel="15">Channel 15</div>
+      </div>
+    </div>
   </div>
   
   <div id="container">
@@ -790,7 +816,8 @@
       color: '#3867d6',    // Lovely blue (8th color in palette)
       size: 10,
       isStart: false,      // Never copy root status to new notes
-      monophonic: false,   // Skip trigger if pitch already playing
+      monophonic: false,   // Skip trigger if any note in same graph playing
+      graph: 0,            // Graph grouping (0 = no monophonic grouping, 1+ = mono group)
       hold: 0              // Wait for 0-100% of duration before spawning agents
     };
     
@@ -828,7 +855,7 @@
         return 440 * Math.pow(2, (midiNote - 69) / 12);
       },
       
-      playNote(midiNote, velocity, duration) {
+      playNote(midiNote, velocity, duration, channel = 0) {
         if (!this.context) return;
         
         // Resume context if suspended (browser autoplay policy)
@@ -836,21 +863,40 @@
           this.context.resume();
         }
         
+        // Get channel-specific settings
+        const ch = settings.synthChannels[channel];
+        
         const freq = this.midiToFreq(midiNote);
-        const osc = this.context.createOscillator();
+        let source;
         const gain = this.context.createGain();
         
-        // Configure oscillator
-        osc.type = settings.synthOscillatorType;
-        osc.frequency.value = freq;
+        // Create noise or oscillator based on type
+        if (ch.oscillatorType === 'noise') {
+          // Generate white noise buffer
+          const bufferSize = this.context.sampleRate * 0.5; // 0.5 second buffer
+          const buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1; // White noise: -1 to 1
+          }
+          
+          source = this.context.createBufferSource();
+          source.buffer = buffer;
+          source.loop = true; // Loop for sustained notes
+        } else {
+          // Standard oscillator
+          source = this.context.createOscillator();
+          source.type = ch.oscillatorType;
+          source.frequency.value = freq;
+        }
         
-        // Configure envelope (ADSR)
-        const vol = (velocity / 127) * settings.synthVolume;
+        // Configure envelope (ADSR) with channel settings
+        const vol = (velocity / 127) * ch.volume;
         const now = this.context.currentTime;
-        const attack = settings.synthAttack;
-        const decay = settings.synthDecay;
-        const sustain = vol * settings.synthSustain;
-        const release = settings.synthRelease;
+        const attack = ch.attack;
+        const decay = ch.decay;
+        const sustain = vol * ch.sustain;
+        const release = ch.release;
         
         // Attack-Decay-Sustain
         gain.gain.setValueAtTime(0, now);
@@ -858,34 +904,34 @@
         gain.gain.linearRampToValueAtTime(sustain, now + attack + decay);
         
         // Connect audio graph
-        if (settings.synthFilterEnabled) {
-          // With filter: osc -> filter -> gain -> destination
+        if (ch.filterEnabled) {
+          // With filter: source -> filter -> gain -> destination
           const filter = this.context.createBiquadFilter();
           filter.type = 'lowpass';
-          filter.frequency.value = freq * settings.synthFilterMultiplier;
-          filter.Q.value = settings.synthFilterQ;
-          osc.connect(filter);
+          filter.frequency.value = freq * ch.filterMultiplier;
+          filter.Q.value = ch.filterQ;
+          source.connect(filter);
           filter.connect(gain);
         } else {
-          // Direct: osc -> gain -> destination
-          osc.connect(gain);
+          // Direct: source -> gain -> destination
+          source.connect(gain);
         }
         gain.connect(this.context.destination);
         
         // Start playing
-        osc.start(now);
+        source.start(now);
         
         // Schedule release and stop
         const releaseTime = now + duration / 1000;
         gain.gain.setValueAtTime(sustain, releaseTime);
         gain.gain.linearRampToValueAtTime(0, releaseTime + release);
-        osc.stop(releaseTime + release);
+        source.stop(releaseTime + release);
         
         // Track active note
-        this.activeOscillators.set(midiNote, { osc, gain });
+        this.activeOscillators.set(midiNote, { osc: source, gain });
         
         // Clean up when done
-        osc.onended = () => {
+        source.onended = () => {
           this.activeOscillators.delete(midiNote);
         };
       },
@@ -1004,7 +1050,7 @@
     
     // Settings
     let settings = {
-      version: "0.4",
+      version: "0.5",
       // Graph settings
       theme: 'dark',
       backgroundColor: themes.dark.backgroundColor,
@@ -1062,16 +1108,201 @@
       // Timing
       playStartDelay: 250, // ms delay before playback starts (gives user a moment)
       
-      // Web Audio synth (fallback when MIDI unavailable)
-      synthOscillatorType: 'triangle', // Oscillator waveform: sine, triangle, square, sawtooth
-      synthVolume: 0.15, // Master volume (0.0-1.0)
-      synthAttack: 0.01, // Attack time in seconds
-      synthDecay: 0.1, // Decay time in seconds
-      synthSustain: 0.7, // Sustain level (0.0-1.0)
-      synthRelease: 0.1, // Release time in seconds
-      synthFilterEnabled: false, // Enable lowpass filter
-      synthFilterMultiplier: 4, // Filter frequency = note frequency * this
-      synthFilterQ: 1, // Filter resonance
+      // Web Audio synth per-channel settings (channels 0-15)
+      synthChannels: [
+        // Channel 0 - Bass (sine)
+        {
+          oscillatorType: 'sine',
+          volume: 0.2,
+          attack: 0.05,
+          decay: 0.1,
+          sustain: 0.8,
+          release: 0.1,
+          filterEnabled: false,
+          filterMultiplier: 2,
+          filterQ: 1
+        },
+        // Channel 1 - Bass (square)
+        {
+          oscillatorType: 'square',
+          volume: 0.15,
+          attack: 0.01,
+          decay: 0.1,
+          sustain: 0.6,
+          release: 0.1,
+          filterEnabled: true,
+          filterMultiplier: 3,
+          filterQ: 1
+        },
+        // Channel 2 - Lead (sawtooth)
+        {
+          oscillatorType: 'sawtooth',
+          volume: 0.15,
+          attack: 0.02,
+          decay: 0.1,
+          sustain: 0.7,
+          release: 0.1,
+          filterEnabled: true,
+          filterMultiplier: 4,
+          filterQ: 1.5
+        },
+        // Channel 3 - Lead (square, punchy)
+        {
+          oscillatorType: 'square',
+          volume: 0.12,
+          attack: 0.01,
+          decay: 0.05,
+          sustain: 0.6,
+          release: 0.05,
+          filterEnabled: false,
+          filterMultiplier: 4,
+          filterQ: 1
+        },
+        // Channel 4 - Lead (triangle, smooth)
+        {
+          oscillatorType: 'triangle',
+          volume: 0.15,
+          attack: 0.02,
+          decay: 0.1,
+          sustain: 0.7,
+          release: 0.1,
+          filterEnabled: false,
+          filterMultiplier: 4,
+          filterQ: 1
+        },
+        // Channel 5 - Pad (triangle, slow)
+        {
+          oscillatorType: 'triangle',
+          volume: 0.1,
+          attack: 0.3,
+          decay: 0.2,
+          sustain: 0.8,
+          release: 0.5,
+          filterEnabled: true,
+          filterMultiplier: 3,
+          filterQ: 1
+        },
+        // Channel 6 - Pad (sine, very slow)
+        {
+          oscillatorType: 'sine',
+          volume: 0.1,
+          attack: 0.5,
+          decay: 0.2,
+          sustain: 0.9,
+          release: 0.6,
+          filterEnabled: false,
+          filterMultiplier: 4,
+          filterQ: 1
+        },
+        // Channel 7 - Pad (sawtooth, warm)
+        {
+          oscillatorType: 'sawtooth',
+          volume: 0.08,
+          attack: 0.3,
+          decay: 0.2,
+          sustain: 0.8,
+          release: 0.4,
+          filterEnabled: true,
+          filterMultiplier: 2.5,
+          filterQ: 1
+        },
+        // Channel 8 - Pluck (triangle)
+        {
+          oscillatorType: 'triangle',
+          volume: 0.15,
+          attack: 0.001,
+          decay: 0.2,
+          sustain: 0.2,
+          release: 0.1,
+          filterEnabled: true,
+          filterMultiplier: 5,
+          filterQ: 2
+        },
+        // Channel 9 - Kick (noise, low filter)
+        {
+          oscillatorType: 'noise',
+          volume: 0.3,
+          attack: 0.001,
+          decay: 0.1,
+          sustain: 0.1,
+          release: 0.05,
+          filterEnabled: true,
+          filterMultiplier: 1.5,
+          filterQ: 1
+        },
+        // Channel 10 - Snare (noise, mid filter)
+        {
+          oscillatorType: 'noise',
+          volume: 0.2,
+          attack: 0.001,
+          decay: 0.05,
+          sustain: 0.1,
+          release: 0.05,
+          filterEnabled: true,
+          filterMultiplier: 3,
+          filterQ: 1.5
+        },
+        // Channel 11 - Hi-hat (noise, high filter)
+        {
+          oscillatorType: 'noise',
+          volume: 0.15,
+          attack: 0.001,
+          decay: 0.02,
+          sustain: 0.05,
+          release: 0.02,
+          filterEnabled: true,
+          filterMultiplier: 8,
+          filterQ: 2
+        },
+        // Channel 12 - FX (noise, swept)
+        {
+          oscillatorType: 'noise',
+          volume: 0.1,
+          attack: 0.2,
+          decay: 0.3,
+          sustain: 0.3,
+          release: 0.4,
+          filterEnabled: true,
+          filterMultiplier: 6,
+          filterQ: 3
+        },
+        // Channel 13 - FX (square, weird)
+        {
+          oscillatorType: 'square',
+          volume: 0.08,
+          attack: 0.1,
+          decay: 0.5,
+          sustain: 0.4,
+          release: 0.8,
+          filterEnabled: true,
+          filterMultiplier: 10,
+          filterQ: 5
+        },
+        // Channel 14 - Ambience (sawtooth, slow)
+        {
+          oscillatorType: 'sawtooth',
+          volume: 0.06,
+          attack: 0.8,
+          decay: 0.5,
+          sustain: 0.9,
+          release: 1.0,
+          filterEnabled: true,
+          filterMultiplier: 2,
+          filterQ: 1
+        },
+        // Channel 15 - Ambience (noise, textural)
+        {
+          oscillatorType: 'noise',
+          volume: 0.05,
+          attack: 0.5,
+          decay: 0.3,
+          sustain: 0.7,
+          release: 0.8,
+          filterEnabled: true,
+          filterMultiplier: 4,
+          filterQ: 2
+        }
+      ],
       
       // System settings
       bpm: 120
@@ -1136,6 +1367,7 @@
         size: lastNoteTemplate.size,
         isStart: false,  // New notes are never root notes
         monophonic: lastNoteTemplate.monophonic,
+        graph: lastNoteTemplate.graph,
         hold: lastNoteTemplate.hold
       };
     }
@@ -1197,11 +1429,13 @@
     }
     
     function triggerNoteSound(note) {
-      // Monophonic mode: skip trigger if this pitch is already playing
+      // Monophonic mode: skip trigger if any note in same graph is playing
       if (note.monophonic) {
-        const isPlaying = activeNotes.some(active => active.midiNote === note.midiNote);
+        const isPlaying = activeNotes.some(active => 
+          active.graph === note.graph
+        );
         if (isPlaying) {
-          return; // Skip trigger - let existing note ring
+          return; // Skip trigger - let existing note in graph ring
         }
       }
       
@@ -1214,7 +1448,7 @@
       const durationMs = durationBeats * (240000 / settings.bpm); // duration is fraction of whole note
       
       if (midi.useWebAudio) {
-        audioSynth.playNote(note.midiNote, velocity, durationMs);
+        audioSynth.playNote(note.midiNote, velocity, durationMs, channel);
       } else {
         midi.sendNote(note.midiNote, velocity, channel);
         
@@ -1222,6 +1456,7 @@
         activeNotes.push({
           midiNote: note.midiNote,
           channel: channel,
+          graph: note.graph || 0,
           offTime: performance.now() + durationMs
         });
       }
@@ -1786,6 +2021,8 @@
       
       // Draw notes on top
       for (const note of notes.values()) {
+        ctx.save(); // Isolate canvas state for each note
+        
         const shape = note.shape || settings.noteShape;
         const color = note.color || settings.noteColor;
         const size = note.size || settings.noteSize;
@@ -1832,6 +2069,8 @@
           ctx.strokeStyle = color; // Restore
           ctx.lineWidth = settings.noteStrokeWidth;
         }
+        
+        ctx.restore(); // Restore canvas state after each note
       }
     }
     
@@ -1917,10 +2156,17 @@
         </div>
         
         <div class="property-section">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" data-property="monophonic" ${note.monophonic ? 'checked' : ''}>
-            <span>Monophonic</span>
-          </label>
+          <div class="property-label">Monophonic</div>
+          <input type="range" class="property-slider" style="width: 12.5%;" min="0" max="1" step="1" 
+                 value="${note.monophonic ? 1 : 0}" data-property="monophonic">
+          <div class="property-value">${note.monophonic ? 1 : 0}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Graph</div>
+          <input type="range" class="property-slider" min="0" max="10" step="1" 
+                 value="${note.graph || 0}" data-property="graph">
+          <div class="property-value">${note.graph || 0}</div>
         </div>
         
         <!-- STYLE PROPERTIES -->
@@ -1974,13 +2220,6 @@
         <h3>Link Properties</h3>
         
         <div class="property-section">
-          <div class="property-label">Group</div>
-          <input type="range" class="property-slider" min="0" max="${settings.linkMaxGroups}" step="1" 
-                 value="${link.group !== undefined ? link.group : 0}" data-property="group">
-          <div class="property-value">${link.group !== undefined ? link.group : 0}</div>
-        </div>
-        
-        <div class="property-section">
           <div class="property-label">Probability</div>
           <input type="range" class="property-slider" min="0" max="100" step="1" 
                  value="${link.probability !== undefined ? link.probability : 100}" data-property="probability">
@@ -1988,9 +2227,22 @@
         </div>
         
         <div class="property-section">
-          <div class="property-label">Weight</div>
+          <div class="property-label">Group</div>
+          <input type="range" class="property-slider" min="0" max="${settings.linkMaxGroups}" step="1" 
+                 value="${link.group !== undefined ? link.group : 0}" data-property="group">
+          <div class="property-value">${link.group !== undefined ? link.group : 0}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Weight Coarse</div>
           <input type="range" class="property-slider" min="0" max="${settings.linkMaxWeight}" step="1" 
                  value="${link.weight !== undefined ? link.weight : 1}" data-property="weight">
+        </div>
+        
+        <div class="property-section" style="margin-top: 4px;">
+          <div class="property-label">Weight Fine</div>
+          <input type="range" class="property-slider" min="-10" max="10" step="1" 
+                 value="0" data-property="weightFine">
           <div class="property-value">${link.weight !== undefined ? link.weight : 1}</div>
         </div>
         
@@ -2060,6 +2312,138 @@
       });
     }
     
+    function showChannelSettings(channel) {
+      const ch = settings.synthChannels[channel];
+      
+      propertiesContent.innerHTML = `
+        <h3>Web Audio Channel ${channel}</h3>
+        
+        <div class="property-section">
+          <div class="property-label">Oscillator Type</div>
+          <input type="range" class="property-slider" min="0" max="4" step="1" 
+                 value="${['sine', 'triangle', 'square', 'sawtooth', 'noise'].indexOf(ch.oscillatorType)}" 
+                 data-property="oscillatorType" data-channel="${channel}">
+          <div class="property-value">${ch.oscillatorType}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Volume</div>
+          <input type="range" class="property-slider" min="0" max="1" step="0.01" 
+                 value="${ch.volume}" 
+                 data-property="volume" data-channel="${channel}">
+          <div class="property-value">${ch.volume.toFixed(2)}</div>
+        </div>
+        
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <div class="property-label">Attack</div>
+          <input type="range" class="property-slider" min="0" max="1" step="0.01" 
+                 value="${ch.attack}" 
+                 data-property="attack" data-channel="${channel}">
+          <div class="property-value">${ch.attack.toFixed(2)}s</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Decay</div>
+          <input type="range" class="property-slider" min="0" max="1" step="0.01" 
+                 value="${ch.decay}" 
+                 data-property="decay" data-channel="${channel}">
+          <div class="property-value">${ch.decay.toFixed(2)}s</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Sustain</div>
+          <input type="range" class="property-slider" min="0" max="1" step="0.01" 
+                 value="${ch.sustain}" 
+                 data-property="sustain" data-channel="${channel}">
+          <div class="property-value">${ch.sustain.toFixed(2)}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Release</div>
+          <input type="range" class="property-slider" min="0" max="1" step="0.01" 
+                 value="${ch.release}" 
+                 data-property="release" data-channel="${channel}">
+          <div class="property-value">${ch.release.toFixed(2)}s</div>
+        </div>
+        
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <div class="property-label">Filter Enabled</div>
+          <input type="range" class="property-slider" style="width: 12.5%;" min="0" max="1" step="1" 
+                 value="${ch.filterEnabled ? 1 : 0}" data-property="filterEnabled" data-channel="${channel}">
+          <div class="property-value">${ch.filterEnabled ? 1 : 0}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Filter Multiplier</div>
+          <input type="range" class="property-slider" min="1" max="10" step="0.1" 
+                 value="${ch.filterMultiplier}" 
+                 data-property="filterMultiplier" data-channel="${channel}">
+          <div class="property-value">${ch.filterMultiplier.toFixed(1)}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Filter Q</div>
+          <input type="range" class="property-slider" min="0.1" max="10" step="0.1" 
+                 value="${ch.filterQ}" 
+                 data-property="filterQ" data-channel="${channel}">
+          <div class="property-value">${ch.filterQ.toFixed(1)}</div>
+        </div>
+      `;
+      
+      attachChannelPropertyHandlers(channel);
+    }
+    
+    function attachChannelPropertyHandlers(channel) {
+      const ch = settings.synthChannels[channel];
+      
+      // Checkboxes
+      propertiesContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const prop = checkbox.dataset.property;
+          ch[prop] = checkbox.checked;
+          render();
+        });
+      });
+      
+      // Sliders
+      propertiesContent.querySelectorAll('.property-slider').forEach(slider => {
+        const updateValue = () => {
+          const prop = slider.dataset.property;
+          const value = parseFloat(slider.value);
+          
+          // Special handling for oscillatorType
+          if (prop === 'oscillatorType') {
+            const types = ['sine', 'triangle', 'square', 'sawtooth', 'noise'];
+            ch[prop] = types[value];
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = types[value];
+          } else if (prop === 'filterEnabled') {
+            // Convert 0/1 to boolean
+            ch[prop] = value === 1;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = value;
+          } else {
+            ch[prop] = value;
+            const valueDisplay = slider.nextElementSibling;
+            
+            // Format display
+            if (prop === 'volume' || prop === 'sustain') {
+              valueDisplay.textContent = value.toFixed(2);
+            } else if (prop === 'attack' || prop === 'decay' || prop === 'release') {
+              valueDisplay.textContent = value.toFixed(2) + 's';
+            } else {
+              valueDisplay.textContent = value.toFixed(1);
+            }
+          }
+          
+          render();
+        };
+        
+        slider.addEventListener('input', updateValue);
+        slider.addEventListener('change', updateValue);
+      });
+    }
+    
     function formatDuration(beats) {
       // Long durations (drones)
       if (beats >= 128) return '128';
@@ -2100,6 +2484,7 @@
         color: note.color,
         size: note.size,
         monophonic: note.monophonic,
+        graph: note.graph,
         hold: note.hold
       };
     }
@@ -2180,6 +2565,11 @@
             note[prop] = shapes[value];
             const valueDisplay = slider.nextElementSibling;
             valueDisplay.textContent = shapes[value];
+          } else if (prop === 'monophonic') {
+            // Convert 0/1 to boolean
+            note[prop] = value === 1;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = value;
           } else {
             note[prop] = value;
             const valueDisplay = slider.nextElementSibling;
@@ -2245,18 +2635,50 @@
       
       // Sliders
       propertiesContent.querySelectorAll('.property-slider').forEach(slider => {
-        const updateValue = () => {
-          const prop = slider.dataset.property;
-          const value = parseInt(slider.value);
-          link[prop] = value;
-          
-          const valueDisplay = slider.nextElementSibling;
-          valueDisplay.textContent = formatPropertyValue(prop, value);
-          updateLinkTemplate(link);
-          render();
-        };
+        const prop = slider.dataset.property;
         
-        slider.addEventListener('input', updateValue);
+        // Special handling for Weight Fine
+        if (prop === 'weightFine') {
+          slider.addEventListener('input', () => {
+            const adjustment = parseInt(slider.value);
+            const coarseSlider = propertiesContent.querySelector('[data-property="weight"]');
+            const newWeight = Math.max(0, Math.min(settings.linkMaxWeight, link.weight + adjustment));
+            
+            // Update coarse slider and value display (which is below fine slider)
+            coarseSlider.value = newWeight;
+            slider.nextElementSibling.textContent = newWeight;
+          });
+          
+          slider.addEventListener('change', () => {
+            const adjustment = parseInt(slider.value);
+            const coarseSlider = propertiesContent.querySelector('[data-property="weight"]');
+            const newWeight = Math.max(0, Math.min(settings.linkMaxWeight, link.weight + adjustment));
+            
+            // Commit the change
+            link.weight = newWeight;
+            coarseSlider.value = newWeight;
+            slider.nextElementSibling.textContent = newWeight;
+            
+            // Reset fine slider to 0 (no visible display to reset)
+            slider.value = 0;
+            
+            updateLinkTemplate(link);
+            render();
+          });
+        } else {
+          // Normal slider handling
+          const updateValue = () => {
+            const value = parseInt(slider.value);
+            link[prop] = value;
+            
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = formatPropertyValue(prop, value);
+            updateLinkTemplate(link);
+            render();
+          };
+          
+          slider.addEventListener('input', updateValue);
+        }
       });
       
       // Action buttons
@@ -2277,10 +2699,14 @@
     function saveSequence() {
       const data = {
         version: settings.version,
-        notes: Array.from(notes.entries()).map(([key, note]) => ({
-          key: key,
-          note: note
-        })),
+        notes: Array.from(notes.entries()).map(([key, note]) => {
+          // Create a clean copy without runtime properties
+          const { lastFireTime, ...cleanNote } = note;
+          return {
+            key: key,
+            note: cleanNote
+          };
+        }),
         metadata: {
           name: modelName,
           description: modelDescription
@@ -2334,7 +2760,32 @@
             // Restore notes
             if (data.notes) {
               for (const item of data.notes) {
-                notes.set(item.key, item.note);
+                const note = item.note;
+                
+                // Normalize note properties with defaults
+                if (!note.color) note.color = settings.noteColor;
+                if (!note.shape) note.shape = 'circle';
+                if (note.size === undefined) note.size = settings.noteSize;
+                if (note.velocity === undefined) note.velocity = 64;
+                if (note.duration === undefined) note.duration = 0.25;
+                if (note.channel === undefined) note.channel = 0;
+                if (note.hold === undefined) note.hold = 0;
+                if (note.graph === undefined) note.graph = 0;
+                if (note.monophonic === undefined) note.monophonic = false;
+                if (!note.links) note.links = [];
+                
+                // Normalize link properties with defaults
+                for (const link of note.links) {
+                  if (link.weight === undefined) link.weight = 1;
+                  if (link.probability === undefined) link.probability = 100;
+                  if (link.group === undefined) link.group = 0;
+                  if (link.phase === undefined) link.phase = 0;
+                }
+                
+                // Remove runtime-only properties that shouldn't be loaded
+                delete note.lastFireTime;
+                
+                notes.set(item.key, note);
               }
             }
             
@@ -2365,6 +2816,7 @@
             selectedLink = null;
             updatePropertiesSidebar();
             render();
+            
             console.log('Sequence loaded');
           } catch (err) {
             console.error('Failed to load sequence:', err);
@@ -2935,16 +3387,27 @@
     const menuSave = document.getElementById('menu-save');
     const menuLoad = document.getElementById('menu-load');
     
+    const menuWebAudio = document.getElementById('menu-webaudio');
+    const webAudioDropdown = document.getElementById('webaudio-dropdown');
     
     // Toggle File dropdown on click
     menuFile.addEventListener('click', (e) => {
       e.stopPropagation();
       fileDropdown.classList.toggle('active');
+      webAudioDropdown.classList.remove('active');
+    });
+    
+    // Toggle Web Audio dropdown on click
+    menuWebAudio.addEventListener('click', (e) => {
+      e.stopPropagation();
+      webAudioDropdown.classList.toggle('active');
+      fileDropdown.classList.remove('active');
     });
     
     // Close dropdowns when clicking elsewhere
     document.addEventListener('click', () => {
       fileDropdown.classList.remove('active');
+      webAudioDropdown.classList.remove('active');
     });
     
     // File menu actions
@@ -2958,6 +3421,16 @@
       e.stopPropagation();
       fileDropdown.classList.remove('active');
       loadSequence();
+    });
+    
+    // Web Audio menu actions - show channel settings
+    webAudioDropdown.querySelectorAll('.menu-dropdown-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        webAudioDropdown.classList.remove('active');
+        const channel = parseInt(item.dataset.channel);
+        showChannelSettings(channel);
+      });
     });
     
     // Keyboard navigation: Arrow keys to cycle through notes OR links (depending on current selection)
