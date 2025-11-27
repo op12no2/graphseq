@@ -12,21 +12,21 @@ https://op12no2.github.io/graphseq/sequencer.html
 
 This is a bit flowery, but exactly how it's implemented.  
 
-When you click Play ```agents``` are born at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle rootiness on/off.
+When you click Play ```agents``` are created at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle rootiness on/off.
 
 When an agent reaches a note (including in the above context), the first thing it does is gate the note on at the specified ```pitch``` and ```velocity``` using the appropriate MIDI ```channel```. It does not do this if the note's ```monophonic``` checkbox is ticked and there already a note gated at the same pitch.
 
-Then it starts figuring out which output link(s) to follow. 
+Then it starts figuring out which output link(s) to follow:- 
 
-First of all it iterates the output links, independently applying each link ```probability``` to get a list of candidates, which may be empty; only a probability of 1.0 ensures a link survives this step: if rand() < probability then add to candidate list.
+1. Iterates the output links, independently applying each link ```probability``` to get a list of candidates, which may be empty; only a probability of 1.0 ensures a link survives this step: if rand() < probability then add to candidate list.
 
-Then it arranges the candidate links (if any) into groups based on link ```group```.
+2. Arrange the candidate links (if any) into groups based on link ```group```.
 
-Next it picks a _single_ link in each group (if any) based on link ```weight``` and discards the other candidates in that group. For example if there are two links in a group with weights 1 and 4 the latter will be selected 4 times more often.  
+3. Select a _single_ link in each group (if any) based on link ```weight``` and discard the other candidates in that group. For example if there are two links in a group with weights 1 and 4 the latter will be selected 4 times more often.  
 
-Then it self-replicates, making a replicant for _the_ link in each group (if any) and after optionally waiting around a while based on note ```hold```, pushes the replicants into the links at a location based on link ```phase``` and waves goodbye.
+4. The agent then self-replicates, making a replicant for _the_ link in each group (if any) and after optionally waiting around a while based on note ```hold```, pushes the replicants into the selected links at a location based on link ```phase``` and waves goodbye.
 
-Finally it kills itself. An agent never performs more than one note. 
+5. Finally the agent deletes itself; an agent never performs more than one note. 
 
 In the background, helper agents are monitoring the notes playing, gating them off as needed based on a note's ```duration```.
 
