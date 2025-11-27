@@ -2,9 +2,9 @@
 
 WIP. Usable but probably buggy.
 
-On start up the sequencer tries to connect to MIDI via loopMIDI or macOS virtual ports and falls back on Web Audio if that fails (just using a sine wave as a preview).
+On start up the sequencer tries to connect to MIDI via loopMIDI or macOS virtual ports and falls back to Web Audio if that fails.
 
-The sequencer is spatially based (non-linear) by default, but areas can become temporally based (linear) by the use of link ```phase``` and/or note ```hold```.
+The sequencer is spatially based by default, but areas can become temporally based by the use of link ```phase``` and/or note ```hold```.
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
@@ -14,7 +14,7 @@ This is a bit flowery, but exactly how it's implemented.
 
 When you click Play ```agents``` are created at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle rootiness on/off.
  
-When an agent reaches a note (including in the above context), the first thing it does is gate the note on at the specified ```pitch``` and ```velocity``` using the appropriate MIDI ```channel```. It does not do this if the note's ```monophonic``` checkbox is ticked and there already a note gated at the same pitch.
+When an agent reaches a note (including in the above context), the first thing it does is gate the note on at the specified ```pitch``` and ```velocity``` using the appropriate MIDI ```channel```. It does not do this if the note's ```monophonic``` checkbox is ticked and there already a note gated in the same ```graph``` (a note property).
 
 Then it starts figuring out which output link(s) to follow:- 
 
