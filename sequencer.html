@@ -981,6 +981,7 @@
                 name.includes('virtual')) {
               this.output = output;
               this.connected = true;
+              this.useWebAudio = false; // Switch to MIDI
               console.log('Connected to MIDI port:', output.name);
               return true;
             }
@@ -990,6 +991,7 @@
           if (this.access.outputs.size > 0) {
             this.output = this.access.outputs.values().next().value;
             this.connected = true;
+            this.useWebAudio = false; // Switch to MIDI
             console.log('Connected to MIDI port:', this.output.name);
             return true;
           }
@@ -3314,6 +3316,10 @@
     
     // Start main update loop
     updateLoop(0);
+    
+    // Initialize Web Audio by default (MIDI is manual via status light click)
+    midi.useWebAudio = true;
+    audioSynth.init();
     
     // Resize canvas on window resize
     window.addEventListener('resize', resizeCanvas);
