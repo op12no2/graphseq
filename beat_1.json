@@ -1,0 +1,296 @@
+{
+  "version": "0.4",
+  "notes": [
+    {
+      "key": "630,240",
+      "note": {
+        "x": 630,
+        "y": 240,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 660,
+            "y": 240,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "660,240",
+      "note": {
+        "x": 660,
+        "y": 240,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 660,
+            "y": 270,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "660,270",
+      "note": {
+        "x": 660,
+        "y": 270,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 660,
+            "y": 300,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "660,300",
+      "note": {
+        "x": 660,
+        "y": 300,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 630,
+            "y": 300,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "630,300",
+      "note": {
+        "x": 630,
+        "y": 300,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 600,
+            "y": 300,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "600,240",
+      "note": {
+        "x": 600,
+        "y": 240,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 101,
+        "rule": null,
+        "links": [
+          {
+            "x": 630,
+            "y": 240,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 600,
+            "y": 300,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "600,300",
+      "note": {
+        "x": 600,
+        "y": 300,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 100,
+        "rule": null,
+        "links": [
+          {
+            "x": 540,
+            "y": 300,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "540,300",
+      "note": {
+        "x": 540,
+        "y": 300,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 9,
+        "duration": 0.25,
+        "velocity": 104,
+        "rule": null,
+        "links": [
+          {
+            "x": 540,
+            "y": 240,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "540,240",
+      "note": {
+        "x": 540,
+        "y": 240,
+        "midiNote": 48,
+        "noteName": "C3",
+        "channel": 11,
+        "duration": 0.25,
+        "velocity": 99,
+        "rule": null,
+        "links": [
+          {
+            "x": 600,
+            "y": 240,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#a8336a",
+        "size": 10,
+        "isStart": true,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    }
+  ],
+  "metadata": {
+    "name": "beat_1",
+    "description": "Single agent. All weights the same so 50:50 when 2 outgoing links."
+  },
+  "settings": {
+    "bpm": 120,
+    "theme": "dark"
+  },
+  "camera": {
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+  }
+}
