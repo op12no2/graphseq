@@ -1050,7 +1050,7 @@
     
     // Settings
     let settings = {
-      version: "0.001",
+      version: "0.002",
       // Graph settings
       theme: 'dark',
       backgroundColor: themes.dark.backgroundColor,
@@ -1060,6 +1060,9 @@
       noteColor: '#3867d6', // 8th color in palette - lovely blue
       noteSize: 10,
       noteShape: 'circle',
+      
+      // Agent limits
+      maxAgents: 2, // Maximum number of agents allowed
       
       // Default note properties (for creating new notes)
       midiNote: 60, // C4
@@ -1412,23 +1415,33 @@
       
       for (const note of notes.values()) {
         if (note.isStart && note.links.length > 0) {
-          // Root notes don't move - they just sit at their position
-          // Create a dummy agent that immediately "arrives" to trigger the note's links
-          agents.push({
-            x: note.x,
-            y: note.y,
-            targetX: note.x,
-            targetY: note.y,
-            progress: 1, // Already at target - will trigger on first frame
-            currentNote: note,
-            targetNote: note,
-            color: note.color || settings.noteColor
-          });
+          // Respect max agents limit even on initial spawn
+          if (agents.length < settings.maxAgents) {
+            // Root notes don't move - they just sit at their position
+            // Create a dummy agent that immediately "arrives" to trigger the note's links
+            agents.push({
+              x: note.x,
+              y: note.y,
+              targetX: note.x,
+              targetY: note.y,
+              progress: 1, // Already at target - will trigger on first frame
+              currentNote: note,
+              targetNote: note,
+              color: note.color || settings.noteColor
+            });
+          }
         }
       }
     }
     
     function triggerNoteSound(note) {
+      const velocity = note.velocity !== undefined ? note.velocity : 100;
+      
+      // Skip entirely if velocity is 0 (silent note - no MIDI traffic, no Web Audio)
+      if (velocity === 0) {
+        return;
+      }
+      
       // Monophonic mode: skip trigger if any note in same graph is playing
       if (note.monophonic) {
         const isPlaying = activeNotes.some(active => 
@@ -1443,7 +1456,6 @@
       note.lastFireTime = performance.now();
       
       const channel = note.channel || 0;
-      const velocity = note.velocity !== undefined ? note.velocity : 100;
       const durationBeats = note.duration || 0.25;
       const durationMs = durationBeats * (240000 / settings.bpm); // duration is fraction of whole note
       
@@ -1597,9 +1609,12 @@
                   }
                 }
                 
-                // All spawns become new agents
+                // All spawns become new agents (respecting max agents limit)
+                // Note: dying agent is still in array, so we account for it
                 for (const spawn of spawns) {
-                  agents.push(spawn);
+                  if (agents.length - 1 < settings.maxAgents) {
+                    agents.push(spawn);
+                  }
                 }
                 
                 // Original agent dies
@@ -1628,9 +1643,12 @@
                   }
                 }
                 
-                // All spawns become new agents
+                // All spawns become new agents (respecting max agents limit)
+                // Note: dying agent is still in array, so we account for it
                 for (const spawn of spawns) {
-                  agents.push(spawn);
+                  if (agents.length - 1 < settings.maxAgents) {
+                    agents.push(spawn);
+                  }
                 }
                 
                 // Original agent dies
@@ -2286,6 +2304,13 @@
                            resize: vertical;">${modelDescription}</textarea>
         </div>
         
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <div class="property-label">Max Agents</div>
+          <input type="range" class="property-slider" id="max-agents-slider" min="1" max="100" step="1" 
+                 value="${settings.maxAgents}">
+          <div class="property-value" id="max-agents-value">${settings.maxAgents}</div>
+        </div>
+        
         <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #333; color: #666; font-size: 11px; line-height: 1.5;">
           <p style="margin: 0 0 8px 0; font-weight: bold; color: #888;">SHORTCUTS</p>
           <p style="margin: 0 0 4px 0;">Double-click: new note</p>
@@ -2296,7 +2321,7 @@
           <p style="margin: 0 0 4px 0;">←/→: cycle selection</p>
           <p style="margin: 0 0 4px 0;">Tab: toggle notes/links ←/→</p>
           <p style="margin: 0 0 4px 0;">Delete: remove selected</p>
-          <p style="margin: 0;">Esc: deselect</p>
+          <p style="margin: 0;">Esc: show sequencer ui</p>
         </div>
 
         <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #333; color: #666; font-size: 11px; line-height: 1.5;">
@@ -2308,6 +2333,8 @@
       // Attach handlers
       const nameInput = document.getElementById('model-name');
       const descInput = document.getElementById('model-description');
+      const maxAgentsSlider = document.getElementById('max-agents-slider');
+      const maxAgentsValue = document.getElementById('max-agents-value');
       
       nameInput.addEventListener('input', () => {
         modelName = nameInput.value;
@@ -2315,6 +2342,11 @@
       
       descInput.addEventListener('input', () => {
         modelDescription = descInput.value;
+      });
+      
+      maxAgentsSlider.addEventListener('input', () => {
+        settings.maxAgents = parseInt(maxAgentsSlider.value);
+        maxAgentsValue.textContent = settings.maxAgents;
       });
     }
     
@@ -2719,6 +2751,7 @@
         },
         settings: {
           bpm: settings.bpm,
+          maxAgents: settings.maxAgents,
           theme: settings.theme
         },
         camera: {
@@ -2807,6 +2840,7 @@
             // Restore settings
             if (data.settings) {
               if (data.settings.bpm) settings.bpm = data.settings.bpm;
+              if (data.settings.maxAgents !== undefined) settings.maxAgents = data.settings.maxAgents;
               if (data.settings.theme) applyTheme(data.settings.theme);
             }
             
@@ -2986,49 +3020,14 @@
         
         updateAgents(deltaTime);
         
-        // Auto-stop when agents die and notes finish
-        // For MIDI: wait until activeNotes is empty (all note-offs sent)
-        // For Web Audio: wait 5 seconds after that for release tails
+        // Auto-restart: when all agents die, respawn from root notes for infinite sequences
         const timeSinceStart = timestamp - playStartTime;
         const gracePeriod = 500; // ms - give sequence time to actually start
-        const releaseTime = 5000; // ms - wait 5 seconds for Web Audio release tails
         
-        // Track when both agents and notes finish
-        if (agents.length === 0 && activeNotes.length === 0 && timeSinceStart > gracePeriod) {
-          if (!window.allFinishedTime) {
-            window.allFinishedTime = timestamp;
-          }
-          
-          const timeSinceFinished = timestamp - window.allFinishedTime;
-          const waitTime = midi.useWebAudio ? releaseTime : 0; // Only wait for Web Audio release
-          
-          if (timeSinceFinished > waitTime) {
-            isPlaying = false;
-            isPaused = false;
-            window.allFinishedTime = null; // Reset for next time
-            
-            // Stop any lingering sounds (shouldn't be any, but just in case)
-            if (midi.useWebAudio) {
-              audioSynth.stopAll();
-            }
-            
-            // Update button states
-            document.getElementById('play-btn').disabled = false;
-            document.getElementById('pause-btn').disabled = true;
-            document.getElementById('stop-btn').disabled = true;
-            
-            // Reset beat counter
-            document.getElementById('beat-value').textContent = '1:1:1';
-            
-            // Update graph counter one final time
-            const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
-            document.getElementById('graph-value').textContent = `${notes.size}:${totalLinks}:0`;
-            
-            console.log('Auto-stopped: agents and notes finished');
-          }
-        } else {
-          // Reset timer if agents/notes come back
-          window.allFinishedTime = null;
+        if (!isPaused && agents.length === 0 && timeSinceStart > gracePeriod) {
+          // Restart by spawning agents from root notes again
+          spawnAgentsFromStartNotes();
+          console.log('Auto-restart: agents died, respawning from root notes');
         }
         
         render();
@@ -3373,6 +3372,14 @@
     
     playBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      
+      // Check if there are any links in the graph
+      const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
+      if (totalLinks === 0) {
+        alert('Cannot start: graph has no links!\nAdd links between notes to create sequences.');
+        return;
+      }
+      
       isPlaying = true;
       isPaused = false;
       playBtn.disabled = true;
