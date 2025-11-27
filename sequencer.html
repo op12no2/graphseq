@@ -1106,7 +1106,7 @@
       noteMaxSize: 20, // Maximum note size
       
       // Timing
-      playStartDelay: 250, // ms delay before playback starts (gives user a moment)
+      playStartDelay: 0, // ms delay before playback starts
       
       // Web Audio synth per-channel settings (channels 0-15)
       synthChannels: [
@@ -2979,6 +2979,34 @@
         }
         
         updateAgents(deltaTime);
+        
+        // Auto-stop when all agents are dead (but only after a grace period to avoid immediate stop)
+        const timeSinceStart = timestamp - playStartTime;
+        const gracePeriod = 500; // ms - give sequence time to actually run
+        if (!isPaused && agents.length === 0 && timeSinceStart > gracePeriod) {
+          isPlaying = false;
+          isPaused = false;
+          activeNotes.length = 0;
+          
+          // Stop all sounds
+          midi.stopAll();
+          audioSynth.stopAll();
+          
+          // Reset beat counter
+          document.getElementById('beat-value').textContent = '1:1:1';
+          
+          // Update graph counter one final time
+          const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
+          document.getElementById('graph-value').textContent = `${notes.size}:${totalLinks}:0`;
+          
+          // Update button states
+          document.getElementById('play-btn').disabled = false;
+          document.getElementById('pause-btn').disabled = true;
+          document.getElementById('stop-btn').disabled = true;
+          
+          console.log('Auto-stopped: all agents dead');
+        }
+        
         render();
       }
       
