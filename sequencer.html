@@ -2986,11 +2986,16 @@
         if (!isPaused && agents.length === 0 && timeSinceStart > gracePeriod) {
           isPlaying = false;
           isPaused = false;
-          activeNotes.length = 0;
           
           // Stop all sounds
-          midi.stopAll();
-          audioSynth.stopAll();
+          if (midi.useWebAudio) {
+            audioSynth.stopAll();
+          } else {
+            for (const activeNote of activeNotes) {
+              midi.sendNoteOff(activeNote.midiNote, activeNote.channel);
+            }
+          }
+          activeNotes.length = 0;
           
           // Reset beat counter
           document.getElementById('beat-value').textContent = '1:1:1';
