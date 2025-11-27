@@ -6,7 +6,7 @@ https://op12no2.github.io/graphseq/sequencer.html
 
 Double-click grid: create a new note using the properties from the last selected note (if any).
 
-Double-click note: toggle note rootiness (see above).
+Double-click note: toggle root note status on/off.
 
 Ctrl+drag from note to note: create a new link between the notes using the properties from the last selected link (if any). 
 
@@ -23,12 +23,6 @@ Tab: toggle between selections note or links when using ←/→.
 Delete: remove selected note/link.
 
 Esc: display sequence properties.
-
-### Examples
-
-#### Example 1
-
-...
 
 ### Acknowledgements
 
