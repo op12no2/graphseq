@@ -1,5 +1,5 @@
 {
-  "version": "0.002",
+  "version": "0.003",
   "notes": [
     {
       "key": "480,120",
@@ -290,44 +290,6 @@
       }
     },
     {
-      "key": "420,120",
-      "note": {
-        "x": 420,
-        "y": 120,
-        "midiNote": 50,
-        "noteName": "D3",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 480,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 360,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#3867d6",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
       "key": "300,60",
       "note": {
         "x": 300,
@@ -377,7 +339,7 @@
             "phase": 0
           },
           {
-            "x": 540,
+            "x": 600,
             "y": 120,
             "weight": 1,
             "probability": 33,
@@ -435,6 +397,44 @@
         "color": "#feca57",
         "size": 16,
         "isStart": true,
+        "monophonic": false,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "420,120",
+      "note": {
+        "x": 420,
+        "y": 120,
+        "midiNote": 50,
+        "noteName": "D3",
+        "channel": 0,
+        "duration": 0.125,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 480,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 360,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
         "monophonic": false,
         "graph": 0,
         "hold": 0
