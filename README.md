@@ -26,7 +26,7 @@ Then it starts figuring out which output link(s) to follow:-
 
 4. REPLICATION. The agent then self-replicates, making a replicant for _the_ link in each group (if any) and after optionally waiting around a while based on note ```hold```, pushes the replicants into the selected links at a location based on link ```phase``` and waves goodbye.
 
-5. Finally the agent deletes itself; an agent never performs more than one note. 
+Finally the agent deletes itself; an agent never performs more than one note. 
 
 In the background, helper agents are monitoring the notes playing, gating them off as needed based on a note's ```duration```.
 
