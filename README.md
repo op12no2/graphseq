@@ -32,6 +32,8 @@ Finally the agent deletes itself; an agent never performs more than one note.
 
 In the background, helper agents are monitoring the notes playing, gating them off as needed based on a note's ```duration```.
 
+The sequence auto stop if no agents exist and no notes are gated (+5s delay for Web Audio because release is affacted).
+
 ### Discussion
 
 I have deliberately resisted adding capabilities for notes to natively fire chords or random notes etc. It can all be done with the existing feature set and additionally you can then connect bits of the chord back into the graph with a low probability. 
@@ -40,7 +42,7 @@ To model a chord, create a note C0 with velocity 0 and link satellite notes C1 t
 
 You can get similar results by linking C1 to Cn serially - because phase is 100 - and it also gives you the ability to apply probabilities cumulatively. In reality each note in a phase=100 sequence is gated at successive ticks, which is arguably less clinical anyway. Create broken chords by adjusting link phase. 
 
-Watch out for feedback loops with agents self-replicating out of control as there are no birth control measures in place at the moment. I am finding it's almost impossisble to _design_ anything other than simple graphs, better to make a pretty pattern, tweak some settings and see what happens. Multiple disconnected graphs each with their own root note can be interesting when you arrange each around a different prime number. You can drag notes around and change note/link properties while the sequencer is playing. Deletion also seems to work, but don't be surprised if something very strange happens. There is no _new graph_ capability at the moment; just refresh the browser. Each small square is a 1/16 note. There is currently no auto-stop when/if all agents die. The plan is that note/link/agent rule sets will allow the graph to morph while it's being performed; i.e. link/note modfication, movement and creation/deletion. Click Esc to deselect and change the property bar back to a place where you can enter a name and description for your graph. Use the File menu to save it.
+Watch out for feedback loops with agents self-replicating out of control as there are no birth control measures in place at the moment. I am finding it's almost impossisble to _design_ anything other than simple graphs, better to make a pretty pattern, tweak some settings and see what happens. Multiple disconnected graphs each with their own root note can be interesting when you arrange each around a different prime number. You can drag notes around and change note/link properties while the sequencer is playing. Deletion also seems to work, but don't be surprised if something very strange happens. There is no _new graph_ capability at the moment; just refresh the browser. Each small square is a 1/16 note. The plan is that note/link/agent rule sets will allow the graph to morph while it's being performed; i.e. link/note modfication, movement and creation/deletion. Click Esc to deselect and change the property bar back to a place where you can enter a name and description for your graph. Use the File menu to save it.
 
 ### Keyboard assignments (PC-speak)
 
