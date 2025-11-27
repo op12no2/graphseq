@@ -58,7 +58,7 @@ Shift+drag: pan the grid.
 
 ←/→: cycle selection to next note or link (whichever is currenty selected)
 
-Tab: toggle netween note selection and link selection WRT ←/→.
+Tab: toggle between selections note or links when using ←/→.
 
 Delete: remove selected note/link.
 
