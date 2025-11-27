@@ -726,7 +726,7 @@
   
   <div id="container">
     <div id="midi-status">
-      <div class="status-light disconnected" id="status-light" title="Click to retry MIDI connection"></div>
+      <div class="status-light disconnected" id="status-light" title="Click to connect to MIDI"></div>
       <span id="status-text">MIDI Disconnected</span>
     </div>
     <div id="bpm-display" title="Drag left/right to change BPM">
@@ -1050,7 +1050,7 @@
     
     // Settings
     let settings = {
-      version: "0.002",
+      version: "0.003",
       // Graph settings
       theme: 'dark',
       backgroundColor: themes.dark.backgroundColor,
@@ -3315,13 +3315,10 @@
     // Start main update loop
     updateLoop(0);
     
-    // Initialize MIDI
-    midi.init();
-    
     // Resize canvas on window resize
     window.addEventListener('resize', resizeCanvas);
     
-    // Click status light to retry connection
+    // Click status light to connect to MIDI
     document.getElementById('status-light').addEventListener('click', () => {
       if (!midi.connected) {
         midi.init();
@@ -3649,6 +3646,93 @@
     // Initialize properties sidebar with helpful hints
     updatePropertiesSidebar();
     render();
+    
+    // Check for ?load=<url> parameter to auto-load a sequence
+    const urlParams = new URLSearchParams(window.location.search);
+    const loadUrl = urlParams.get('load');
+    if (loadUrl) {
+      console.log('Loading sequence from URL:', loadUrl);
+      fetch(loadUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Same loading logic as loadSequence()
+          notes.clear();
+          agents.length = 0;
+          selectedNote = null;
+          selectedLink = null;
+          
+          // Restore notes
+          if (data.notes) {
+            for (const item of data.notes) {
+              const note = item.note;
+              
+              // Normalize note properties with defaults
+              if (!note.color) note.color = settings.noteColor;
+              if (!note.shape) note.shape = 'circle';
+              if (note.size === undefined) note.size = settings.noteSize;
+              if (note.velocity === undefined) note.velocity = 64;
+              if (note.duration === undefined) note.duration = 0.25;
+              if (note.channel === undefined) note.channel = 0;
+              if (note.hold === undefined) note.hold = 0;
+              if (note.graph === undefined) note.graph = 0;
+              if (note.monophonic === undefined) note.monophonic = false;
+              if (!note.links) note.links = [];
+              
+              // Normalize link properties with defaults
+              for (const link of note.links) {
+                if (link.weight === undefined) link.weight = 1;
+                if (link.probability === undefined) link.probability = 100;
+                if (link.group === undefined) link.group = 0;
+                if (link.phase === undefined) link.phase = 0;
+              }
+              
+              // Remove runtime-only properties that shouldn't be loaded
+              delete note.lastFireTime;
+              
+              notes.set(item.key, note);
+            }
+          }
+          
+          // Restore metadata
+          if (data.metadata) {
+            modelName = data.metadata.name || 'Untitled';
+            modelDescription = data.metadata.description || '';
+          } else {
+            modelName = 'Untitled';
+            modelDescription = '';
+          }
+          
+          // Restore settings
+          if (data.settings) {
+            if (data.settings.bpm) settings.bpm = data.settings.bpm;
+            if (data.settings.maxAgents !== undefined) settings.maxAgents = data.settings.maxAgents;
+            if (data.settings.theme) applyTheme(data.settings.theme);
+          }
+          
+          // Restore camera
+          if (data.camera) {
+            panX = data.camera.panX || 0;
+            panY = data.camera.panY || 0;
+            zoom = data.camera.zoom || 1;
+          }
+          
+          selectedNote = null;
+          selectedLink = null;
+          updatePropertiesSidebar();
+          render();
+          
+          console.log('Sequence loaded from URL');
+        })
+        .catch(err => {
+          console.error('Failed to load sequence from URL:', err);
+          alert(`Failed to load sequence from URL:\n${loadUrl}\n\nError: ${err.message}`);
+        });
+    }
   </script>
 </body>
 </html>
