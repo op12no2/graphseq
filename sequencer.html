@@ -2980,36 +2980,49 @@
         
         updateAgents(deltaTime);
         
-        // Auto-stop when all agents are dead (but only after a grace period to avoid immediate stop)
+        // Auto-stop when agents die and notes finish
+        // For MIDI: wait until activeNotes is empty (all note-offs sent)
+        // For Web Audio: wait 5 seconds after that for release tails
         const timeSinceStart = timestamp - playStartTime;
-        const gracePeriod = 500; // ms - give sequence time to actually run
-        if (!isPaused && agents.length === 0 && timeSinceStart > gracePeriod) {
-          isPlaying = false;
-          isPaused = false;
-          
-          // Stop all sounds
-          if (midi.useWebAudio) {
-            audioSynth.stopAll();
-          } else {
-            for (const activeNote of activeNotes) {
-              midi.sendNoteOff(activeNote.midiNote, activeNote.channel);
-            }
+        const gracePeriod = 500; // ms - give sequence time to actually start
+        const releaseTime = 5000; // ms - wait 5 seconds for Web Audio release tails
+        
+        // Track when both agents and notes finish
+        if (agents.length === 0 && activeNotes.length === 0 && timeSinceStart > gracePeriod) {
+          if (!window.allFinishedTime) {
+            window.allFinishedTime = timestamp;
           }
-          activeNotes.length = 0;
           
-          // Reset beat counter
-          document.getElementById('beat-value').textContent = '1:1:1';
+          const timeSinceFinished = timestamp - window.allFinishedTime;
+          const waitTime = midi.useWebAudio ? releaseTime : 0; // Only wait for Web Audio release
           
-          // Update graph counter one final time
-          const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
-          document.getElementById('graph-value').textContent = `${notes.size}:${totalLinks}:0`;
-          
-          // Update button states
-          document.getElementById('play-btn').disabled = false;
-          document.getElementById('pause-btn').disabled = true;
-          document.getElementById('stop-btn').disabled = true;
-          
-          console.log('Auto-stopped: all agents dead');
+          if (timeSinceFinished > waitTime) {
+            isPlaying = false;
+            isPaused = false;
+            window.allFinishedTime = null; // Reset for next time
+            
+            // Stop any lingering sounds (shouldn't be any, but just in case)
+            if (midi.useWebAudio) {
+              audioSynth.stopAll();
+            }
+            
+            // Update button states
+            document.getElementById('play-btn').disabled = false;
+            document.getElementById('pause-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = true;
+            
+            // Reset beat counter
+            document.getElementById('beat-value').textContent = '1:1:1';
+            
+            // Update graph counter one final time
+            const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
+            document.getElementById('graph-value').textContent = `${notes.size}:${totalLinks}:0`;
+            
+            console.log('Auto-stopped: agents and notes finished');
+          }
+        } else {
+          // Reset timer if agents/notes come back
+          window.allFinishedTime = null;
         }
         
         render();
