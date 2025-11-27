@@ -40,4 +40,4 @@ To model a chord, create a note C0 with velocity 0 and link satellite notes C1 t
 
 - https://midinous.com/ - inspiration
 - https://www.youtube.com/@tachesteaches - inspiration
-- https://claude.ai - inspiration and patience
+- https://claude.ai - patience 
