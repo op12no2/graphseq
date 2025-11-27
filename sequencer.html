@@ -1050,7 +1050,7 @@
     
     // Settings
     let settings = {
-      version: "0.5",
+      version: "0.001",
       // Graph settings
       theme: 'dark',
       backgroundColor: themes.dark.backgroundColor,
@@ -2090,6 +2090,9 @@
     }
     
     function showNoteProperties(note) {
+      // Update template when selecting a note so new notes use these properties
+      updateNoteTemplate(note);
+      
       const midiNote = note.midiNote || 60;
       const octave = Math.floor(midiNote / 12) - 1;
       const noteIndex = midiNote % 12;
@@ -2215,6 +2218,9 @@
     
     function showLinkProperties(linkData) {
       const link = linkData.link;
+      
+      // Update template when selecting a link so new links use these properties
+      updateLinkTemplate(link);
       
       propertiesContent.innerHTML = `
         <h3>Link Properties</h3>
