@@ -14,7 +14,7 @@ The example .json files (well, just one at the moment) can be download and opene
 
 This is a bit flowery, but exactly how it's implemented.  
 
-When you click Play ```agents``` are created at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle rootiness on/off.
+When you click Play ```agents``` are created at ```root``` notes. Think of agents as artists _performing_ the graph. Root notes have an outline. Double-click notes to toggle rootiness on/off.  Independent/disconnected graphs will need a root note to get started, but can have more than one.
  
 When an agent reaches a note (including in the above context), the first thing it does is gate the note on at the specified ```pitch``` and ```velocity``` using the appropriate MIDI ```channel```. It does not do this if the note's ```monophonic``` checkbox is ticked and there already a note gated in the same ```graph``` (a note property).
 
