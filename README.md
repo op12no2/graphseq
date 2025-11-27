@@ -2,10 +2,6 @@
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
-To use the examples in the repo, download the files and open from the sequencer ```File+Open``` menu. 
-
-Descriptions below.
-
 ### Keyboard assignments (PC-speak)
 
 Double-click grid: create a new note using the properties from the last selected note (if any).
