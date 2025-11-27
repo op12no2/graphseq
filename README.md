@@ -18,13 +18,13 @@ When an agent reaches a note (including in the above context), the first thing i
 
 Then it starts figuring out which output link(s) to follow:- 
 
-1. Iterates the output links, independently applying each link ```probability``` to get a list of candidates, which may be empty; only a probability of 1.0 ensures a link survives this step: if rand() < probability then add to candidate list.
+1. FILTERING. Iterate the output links, independently-applying each link ```probability``` to get a list of candidates, which may be empty; only a probability of 1.0 ensures a link survives this step: if rand() < probability then add to candidate list.
 
-2. Arrange the candidate links (if any) into groups based on link ```group```.
+2. GROUPING. Arrange the candidate links (if any) into groups based on link ```group```.
 
-3. Select a _single_ link in each group (if any) based on link ```weight``` and discard the other candidates in that group. For example if there are two links in a group with weights 1 and 4 the latter will be selected 4 times more often.  
+3. SELECTION. Select a _single_ link in each group (if any) based on link ```weight``` and discard the other candidates in that group. For example if there are two links in a group with weights 1 and 4 the latter will be selected 4 times more often.  
 
-4. The agent then self-replicates, making a replicant for _the_ link in each group (if any) and after optionally waiting around a while based on note ```hold```, pushes the replicants into the selected links at a location based on link ```phase``` and waves goodbye.
+4. REPLICATION. The agent then self-replicates, making a replicant for _the_ link in each group (if any) and after optionally waiting around a while based on note ```hold```, pushes the replicants into the selected links at a location based on link ```phase``` and waves goodbye.
 
 5. Finally the agent deletes itself; an agent never performs more than one note. 
 
