@@ -10,7 +10,7 @@ On page load the sequencer will try and connect to loopMIDI on Windows and IAC o
 
 ### Examples
 
-[Binary Waterfall](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/waterfall.json) | [video](https://www.youtube.com/watch?v=cY8j3bs4pKk)
+Binary Waterfall [run](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/waterfall.json) | [video](https://www.youtube.com/watch?v=cY8j3bs4pKk)
 
 ### Acknowledgements
 
