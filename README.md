@@ -1,6 +1,6 @@
 # MIDI graph sequencer
 
-WIP. Just a UI at the moment.
+WIP.
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
@@ -10,8 +10,7 @@ On page load the sequencer will try and connect to loopMIDI on Windows and IAC o
 
 ### Examples
 
-[Binary waterfall](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/waterfall.json) - blue: channel 0, yellow: channel 1
-
+[Binary Waterfall](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/waterfall.json) [▶️](https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/waterfall.mp3)
 
 ### Acknowledgements
 
