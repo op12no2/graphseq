@@ -2,6 +2,150 @@
   "version": "0.003",
   "notes": [
     {
+      "key": "540,120",
+      "note": {
+        "x": 540,
+        "y": 120,
+        "midiNote": 57,
+        "noteName": "A3",
+        "channel": 0,
+        "duration": 0.0625,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 570,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 480,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "570,120",
+      "note": {
+        "x": 570,
+        "y": 120,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 0,
+        "duration": 0.0625,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 630,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 540,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "360,120",
+      "note": {
+        "x": 360,
+        "y": 120,
+        "midiNote": 60,
+        "noteName": "C4",
+        "channel": 10,
+        "duration": 0.125,
+        "velocity": 0,
+        "rule": null,
+        "links": [
+          {
+            "x": 420,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 360,
+            "y": 180,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "square",
+        "color": "#feca57",
+        "size": 16,
+        "isStart": true,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "630,120",
+      "note": {
+        "x": 630,
+        "y": 120,
+        "midiNote": 64,
+        "noteName": "E4",
+        "channel": 0,
+        "duration": 0.125,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 570,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#3867d6",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
       "key": "480,120",
       "note": {
         "x": 480,
@@ -24,7 +168,7 @@
           {
             "x": 420,
             "y": 120,
-            "weight": 1,
+            "weight": 2,
             "probability": 100,
             "group": 0,
             "phase": 0
@@ -34,370 +178,7 @@
         "color": "#3867d6",
         "size": 10,
         "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "540,120",
-      "note": {
-        "x": 540,
-        "y": 120,
-        "midiNote": 57,
-        "noteName": "A3",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 600,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 480,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#3867d6",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "600,120",
-      "note": {
-        "x": 600,
-        "y": 120,
-        "midiNote": 60,
-        "noteName": "C4",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 660,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 540,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#3867d6",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "660,120",
-      "note": {
-        "x": 660,
-        "y": 120,
-        "midiNote": 64,
-        "noteName": "E4",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 600,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#3867d6",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "360,180",
-      "note": {
-        "x": 360,
-        "y": 180,
-        "midiNote": 45,
-        "noteName": "A2",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 360,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 360,
-            "y": 240,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#a8336a",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "360,240",
-      "note": {
-        "x": 360,
-        "y": 240,
-        "midiNote": 48,
-        "noteName": "C3",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 360,
-            "y": 180,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 360,
-            "y": 300,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#a8336a",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "360,360",
-      "note": {
-        "x": 360,
-        "y": 360,
-        "midiNote": 55,
-        "noteName": "G3",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 360,
-            "y": 300,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 360,
-            "y": 420,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#a8336a",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "360,420",
-      "note": {
-        "x": 360,
-        "y": 420,
-        "midiNote": 59,
-        "noteName": "B3",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 360,
-            "y": 360,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#a8336a",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "300,60",
-      "note": {
-        "x": 300,
-        "y": 60,
-        "midiNote": 59,
-        "noteName": "B3",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 0,
-        "rule": null,
-        "links": [],
-        "shape": "square",
-        "color": "#3867d6",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "360,300",
-      "note": {
-        "x": 360,
-        "y": 300,
-        "midiNote": 52,
-        "noteName": "E3",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 64,
-        "rule": null,
-        "links": [
-          {
-            "x": 360,
-            "y": 240,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 360,
-            "y": 360,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 600,
-            "y": 120,
-            "weight": 1,
-            "probability": 33,
-            "group": 1,
-            "phase": 0
-          }
-        ],
-        "shape": "circle",
-        "color": "#a8336a",
-        "size": 10,
-        "isStart": false,
-        "monophonic": false,
-        "graph": 0,
-        "hold": 0
-      }
-    },
-    {
-      "key": "360,120",
-      "note": {
-        "x": 360,
-        "y": 120,
-        "midiNote": 36,
-        "noteName": "C2",
-        "channel": 0,
-        "duration": 0.125,
-        "velocity": 0,
-        "rule": null,
-        "links": [
-          {
-            "x": 300,
-            "y": 60,
-            "weight": 1,
-            "probability": 33,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 420,
-            "y": 120,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          },
-          {
-            "x": 360,
-            "y": 180,
-            "weight": 1,
-            "probability": 100,
-            "group": 0,
-            "phase": 0
-          }
-        ],
-        "shape": "square",
-        "color": "#feca57",
-        "size": 16,
-        "isStart": true,
-        "monophonic": false,
+        "monophonic": true,
         "graph": 0,
         "hold": 0
       }
@@ -435,7 +216,189 @@
         "color": "#3867d6",
         "size": 10,
         "isStart": false,
-        "monophonic": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "360,180",
+      "note": {
+        "x": 360,
+        "y": 180,
+        "midiNote": 45,
+        "noteName": "A2",
+        "channel": 0,
+        "duration": 0.125,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 360,
+            "y": 120,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 360,
+            "y": 240,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#a8336a",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "360,240",
+      "note": {
+        "x": 360,
+        "y": 240,
+        "midiNote": 48,
+        "noteName": "C3",
+        "channel": 0,
+        "duration": 0.125,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 360,
+            "y": 180,
+            "weight": 2,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 360,
+            "y": 300,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#a8336a",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "360,300",
+      "note": {
+        "x": 360,
+        "y": 300,
+        "midiNote": 52,
+        "noteName": "E3",
+        "channel": 0,
+        "duration": 0.0625,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 360,
+            "y": 240,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 360,
+            "y": 330,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#a8336a",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "360,330",
+      "note": {
+        "x": 360,
+        "y": 330,
+        "midiNote": 55,
+        "noteName": "G3",
+        "channel": 0,
+        "duration": 0.0625,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 360,
+            "y": 300,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          },
+          {
+            "x": 360,
+            "y": 390,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#a8336a",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
+        "graph": 0,
+        "hold": 0
+      }
+    },
+    {
+      "key": "360,390",
+      "note": {
+        "x": 360,
+        "y": 390,
+        "midiNote": 59,
+        "noteName": "B3",
+        "channel": 0,
+        "duration": 0.125,
+        "velocity": 64,
+        "rule": null,
+        "links": [
+          {
+            "x": 360,
+            "y": 330,
+            "weight": 1,
+            "probability": 100,
+            "group": 0,
+            "phase": 0
+          }
+        ],
+        "shape": "circle",
+        "color": "#a8336a",
+        "size": 10,
+        "isStart": false,
+        "monophonic": true,
         "graph": 0,
         "hold": 0
       }
