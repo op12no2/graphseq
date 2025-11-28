@@ -1,6 +1,6 @@
 # MIDI graph sequencer
 
-WIP.
+WIP. Warning! - this alpha version only sends note on.
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
