@@ -664,11 +664,19 @@
     // Model metadata
     let modelName = 'Untitled';
     
+    // Debug mode (enable via URL: ?debug or ?debug=true)
+    const urlParams = new URLSearchParams(window.location.search);
+    const debugMode = urlParams.has('debug');
+    if (debugMode) {
+      console.log('🎵 DEBUG MODE ENABLED - MIDI messages will be logged');
+    }
+    
     // MIDI state
     const midi = {
       access: null,
       output: null,
       connected: false,
+      debug: debugMode,
       
       updateStatus() {
         const statusLight = document.getElementById('status-light');
@@ -725,21 +733,55 @@
       },
       
       sendNote(note, velocity, channel = 0) {
-        if (!this.output) return;
+        if (!this.output) {
+          if (this.debug) console.log('❌ MIDI: No output connected');
+          return;
+        }
         const status = 0x90 | (channel & 0x0F);
-        this.output.send([status, note & 0x7F, velocity & 0x7F]);
+        const message = [status, note & 0x7F, velocity & 0x7F];
+        this.output.send(message);
+        
+        if (this.debug) {
+          console.log(`🎵 MIDI Note-On: Ch ${channel + 1}, Note ${note} (${this.getNoteName(note)}), Vel ${velocity}`);
+          console.log(`   Raw bytes: [${message.map(b => '0x' + b.toString(16).toUpperCase()).join(', ')}]`);
+        }
+      },
+      
+      getNoteName(midiNote) {
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const octave = Math.floor(midiNote / 12) - 1;
+        const note = noteNames[midiNote % 12];
+        return note + octave;
       },
       
       sendNoteOff(note, channel = 0) {
-        if (!this.output) return;
+        if (!this.output) {
+          if (this.debug) console.log('❌ MIDI: No output connected');
+          return;
+        }
         const status = 0x80 | (channel & 0x0F);
-        this.output.send([status, note & 0x7F, 0]);
+        const message = [status, note & 0x7F, 0];
+        this.output.send(message);
+        
+        if (this.debug) {
+          console.log(`🎵 MIDI Note-Off: Ch ${channel + 1}, Note ${note} (${this.getNoteName(note)})`);
+          console.log(`   Raw bytes: [${message.map(b => '0x' + b.toString(16).toUpperCase()).join(', ')}]`);
+        }
       },
       
       sendCC(cc, value, channel = 0) {
-        if (!this.output) return;
+        if (!this.output) {
+          if (this.debug) console.log('❌ MIDI: No output connected');
+          return;
+        }
         const status = 0xB0 | (channel & 0x0F);
-        this.output.send([status, cc & 0x7F, value & 0x7F]);
+        const message = [status, cc & 0x7F, value & 0x7F];
+        this.output.send(message);
+        
+        if (this.debug) {
+          console.log(`🎛 MIDI CC: Ch ${channel + 1}, CC ${cc}, Value ${value}`);
+          console.log(`   Raw bytes: [${message.map(b => '0x' + b.toString(16).toUpperCase()).join(', ')}]`);
+        }
       }
     };
     
@@ -751,6 +793,9 @@
     let playStartTime = 0; // When play button was pressed
     
     let lastFrameTime = 0;
+    
+    // Performers - visual agents that traverse the graph
+    const performers = [];
     
     // Settings
     let settings = {
@@ -770,6 +815,8 @@
       globalPitchRandomisation: 0, // 0-24 semitones, added to note randomisation
       
       // Visual tuning constants
+      performerSize: 8, // Performer circle radius
+      performerColor: '#4ecdc4', // Teal glow
       arrowSize: 6, // Link arrow head size
       linkLineWidth: 1.5, // Link stroke width
       linkCreatingDashPattern: [5, 5], // Dash pattern while creating link
@@ -777,11 +824,6 @@
       noteRootStrokeWidth: 3, // Root note outline width (thicker)
       gridLineWidth: 1, // Grid line width
       linkClickThreshold: 8, // Distance in pixels to click a link
-      
-      // Note fire visual feedback
-      noteFireFlashDuration: 150, // ms to show note fire flash
-      noteFireFlashBrightness: 1.3, // Size multiplier when fired (1.0 = normal)
-      noteFireFlashColor: '#cccccc', // Flash color (use less bright gray instead of white)
       
       // Color picker
       colorSwatchSize: 16, // px - size of color picker swatches
@@ -880,7 +922,25 @@
       locrian: [0, 1, 3, 5, 6, 8, 10],
       wholeTone: [0, 2, 4, 6, 8, 10],
       diminished: [0, 2, 3, 5, 6, 8, 9, 11],
-      blues: [0, 3, 5, 6, 7, 10]
+      blues: [0, 3, 5, 6, 7, 10],
+      // Indian (Raga-inspired)
+      bhairav: [0, 1, 4, 5, 7, 8, 11],
+      kafi: [0, 2, 3, 5, 7, 9, 10],
+      marwa: [0, 1, 4, 6, 7, 9, 11],
+      // Arabic/Middle Eastern
+      hijaz: [0, 1, 4, 5, 7, 8, 11],
+      huzam: [0, 1, 4, 5, 7, 8, 10],
+      bayati: [0, 1, 3, 5, 7, 8, 10],
+      // Japanese
+      inSen: [0, 1, 5, 7, 10],
+      hirajoshi: [0, 2, 3, 7, 8],
+      iwato: [0, 1, 5, 6, 10],
+      // African-inspired
+      africanPentatonic: [0, 2, 4, 7, 9],
+      ethiopian: [0, 2, 4, 5, 7, 9, 11],
+      // Synthetic/Exotic
+      hungarianMinor: [0, 2, 3, 6, 7, 8, 11],
+      doubleHarmonic: [0, 1, 4, 5, 7, 8, 11]
     };
     
     // Quantize MIDI note to scale (nearest note)
@@ -1002,8 +1062,140 @@
         midi.sendNote(midiNote, velocity, channel);
       }
       
-      // Mark note as just fired for visual feedback
-      note.lastFireTime = performance.now();
+    }
+    
+    // Performer system (Phase 1 - scaffolding only)
+    function spawnPerformersAtLeadIns() {
+      performers.length = 0; // Clear existing
+      
+      for (const note of notes.values()) {
+        if (note.isStart) {
+          // Pick first link to start moving
+          let targetNote = null;
+          if (note.links.length > 0) {
+            const firstLink = pickWeightedLink(note);
+            if (firstLink) {
+              targetNote = notes.get(posKey(firstLink.x, firstLink.y));
+            }
+          }
+          
+          performers.push({
+            x: note.x,
+            y: note.y,
+            color: settings.performerColor,
+            currentNote: note,
+            targetNote: targetNote,
+            progress: 0 // 0 to 1, progress along path to target
+          });
+        }
+      }
+      
+      console.log(`Spawned ${performers.length} performer(s) at lead-in notes`);
+    }
+    
+    // Pick a random link from a note using weighted probability
+    function pickWeightedLink(note) {
+      if (!note.links || note.links.length === 0) return null;
+      
+      // Single link - no choice needed
+      if (note.links.length === 1) return note.links[0];
+      
+      // Calculate total weight
+      const totalWeight = note.links.reduce((sum, link) => sum + (link.weight || 1), 0);
+      
+      // Pick random value in range [0, totalWeight)
+      let random = Math.random() * totalWeight;
+      
+      // Find which link this random value lands in
+      for (const link of note.links) {
+        const weight = link.weight || 1;
+        random -= weight;
+        if (random <= 0) {
+          return link;
+        }
+      }
+      
+      // Fallback (shouldn't reach here due to floating point, but just in case)
+      return note.links[note.links.length - 1];
+    }
+    
+    // Update performers - move them along paths and trigger notes
+    function updatePerformers(deltaTime) {
+      const deltaSeconds = deltaTime / 1000;
+      
+      // Calculate speed from BPM: 1 grid space = 1 sixteenth note
+      // BPM = quarter notes per minute
+      const quarterNotesPerSecond = settings.bpm / 60;
+      const sixteenthNotesPerSecond = quarterNotesPerSecond * 4;
+      const speed = sixteenthNotesPerSecond * gridSpacing; // Grid spaces per second
+      
+      const moveDistance = speed * deltaSeconds;
+      
+      for (const performer of performers) {
+        if (!performer.targetNote) continue; // No target, don't move
+        
+        // Calculate distance to target
+        const dx = performer.targetNote.x - performer.currentNote.x;
+        const dy = performer.targetNote.y - performer.currentNote.y;
+        const totalDistance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (totalDistance === 0) continue; // Already there somehow
+        
+        // Update progress
+        const progressDelta = moveDistance / totalDistance;
+        performer.progress += progressDelta;
+        
+        // Check if arrived at target
+        if (performer.progress >= 1) {
+          // Arrived! Trigger the note
+          triggerNoteSound(performer.targetNote);
+          
+          // Move to target
+          performer.currentNote = performer.targetNote;
+          performer.x = performer.targetNote.x;
+          performer.y = performer.targetNote.y;
+          performer.progress = 0;
+          
+          // Pick next link
+          if (performer.currentNote.links.length > 0) {
+            const nextLink = pickWeightedLink(performer.currentNote);
+            if (nextLink) {
+              performer.targetNote = notes.get(posKey(nextLink.x, nextLink.y));
+            } else {
+              performer.targetNote = null; // Dead end
+            }
+          } else {
+            performer.targetNote = null; // No outgoing links
+          }
+        } else {
+          // Still moving - interpolate position
+          performer.x = performer.currentNote.x + dx * performer.progress;
+          performer.y = performer.currentNote.y + dy * performer.progress;
+        }
+      }
+    }
+    
+    function drawPerformers() {
+      for (const performer of performers) {
+        const size = settings.performerSize;
+        
+        // Glowing effect with radial gradient
+        const gradient = ctx.createRadialGradient(performer.x, performer.y, 0, performer.x, performer.y, size);
+        gradient.addColorStop(0, performer.color);
+        gradient.addColorStop(0.5, performer.color + 'aa');
+        gradient.addColorStop(1, performer.color + '00');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(performer.x, performer.y, size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Bright center
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(performer.x, performer.y, size / 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     
     
@@ -1444,27 +1636,9 @@
         ctx.strokeStyle = color;
         ctx.lineWidth = settings.noteStrokeWidth;
         
-        // Check if note recently fired and should flash
-        const now = performance.now();
-        const timeSinceFire = note.lastFireTime ? now - note.lastFireTime : Infinity;
-        const isFlashing = timeSinceFire < settings.noteFireFlashDuration;
-        
         drawNoteShape(ctx, note.x, note.y, size, shape);
         ctx.fill();
         ctx.stroke();
-        
-        // Draw bright flash if recently fired
-        if (isFlashing) {
-          ctx.save();
-          ctx.globalAlpha = 1 - (timeSinceFire / settings.noteFireFlashDuration); // Fade out
-          ctx.fillStyle = settings.noteFireFlashColor;
-          ctx.strokeStyle = settings.noteFireFlashColor;
-          ctx.lineWidth = settings.noteStrokeWidth * settings.noteFireFlashBrightness;
-          drawNoteShape(ctx, note.x, note.y, size * settings.noteFireFlashBrightness, shape);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
-        }
         
         // Draw outer outline for root notes
         if (note.isStart) {
@@ -1544,7 +1718,7 @@
           <div class="property-label">Channel</div>
           <input type="range" class="property-slider" min="0" max="15" step="1" 
                  value="${note.channel || 0}" data-property="channel">
-          <div class="property-value">${note.channel || 0}</div>
+          <div class="property-value">${(note.channel || 0) + 1}</div>
         </div>
         
         <!-- STYLE PROPERTIES -->
@@ -1650,20 +1824,47 @@
           <div class="property-label">Scale / Quantisation</div>
           <select class="property-select" id="scale-select">
             <option value="chromatic" ${settings.scale === 'chromatic' ? 'selected' : ''}>Chromatic</option>
-            <option value="major" ${settings.scale === 'major' ? 'selected' : ''}>Major (Ionian)</option>
-            <option value="minor" ${settings.scale === 'minor' ? 'selected' : ''}>Natural Minor (Aeolian)</option>
-            <option value="harmonicMinor" ${settings.scale === 'harmonicMinor' ? 'selected' : ''}>Harmonic Minor</option>
-            <option value="melodicMinor" ${settings.scale === 'melodicMinor' ? 'selected' : ''}>Melodic Minor</option>
-            <option value="majorPentatonic" ${settings.scale === 'majorPentatonic' ? 'selected' : ''}>Major Pentatonic</option>
-            <option value="minorPentatonic" ${settings.scale === 'minorPentatonic' ? 'selected' : ''}>Minor Pentatonic</option>
-            <option value="dorian" ${settings.scale === 'dorian' ? 'selected' : ''}>Dorian</option>
-            <option value="phrygian" ${settings.scale === 'phrygian' ? 'selected' : ''}>Phrygian</option>
-            <option value="lydian" ${settings.scale === 'lydian' ? 'selected' : ''}>Lydian</option>
-            <option value="mixolydian" ${settings.scale === 'mixolydian' ? 'selected' : ''}>Mixolydian</option>
-            <option value="locrian" ${settings.scale === 'locrian' ? 'selected' : ''}>Locrian</option>
-            <option value="wholeTone" ${settings.scale === 'wholeTone' ? 'selected' : ''}>Whole Tone</option>
-            <option value="diminished" ${settings.scale === 'diminished' ? 'selected' : ''}>Diminished (Whole-Half)</option>
-            <option value="blues" ${settings.scale === 'blues' ? 'selected' : ''}>Blues</option>
+            <optgroup label="Western">
+              <option value="major" ${settings.scale === 'major' ? 'selected' : ''}>Major (Ionian)</option>
+              <option value="minor" ${settings.scale === 'minor' ? 'selected' : ''}>Natural Minor (Aeolian)</option>
+              <option value="harmonicMinor" ${settings.scale === 'harmonicMinor' ? 'selected' : ''}>Harmonic Minor</option>
+              <option value="melodicMinor" ${settings.scale === 'melodicMinor' ? 'selected' : ''}>Melodic Minor</option>
+              <option value="majorPentatonic" ${settings.scale === 'majorPentatonic' ? 'selected' : ''}>Major Pentatonic</option>
+              <option value="minorPentatonic" ${settings.scale === 'minorPentatonic' ? 'selected' : ''}>Minor Pentatonic</option>
+              <option value="dorian" ${settings.scale === 'dorian' ? 'selected' : ''}>Dorian</option>
+              <option value="phrygian" ${settings.scale === 'phrygian' ? 'selected' : ''}>Phrygian</option>
+              <option value="lydian" ${settings.scale === 'lydian' ? 'selected' : ''}>Lydian</option>
+              <option value="mixolydian" ${settings.scale === 'mixolydian' ? 'selected' : ''}>Mixolydian</option>
+              <option value="locrian" ${settings.scale === 'locrian' ? 'selected' : ''}>Locrian</option>
+            </optgroup>
+            <optgroup label="Blues & Jazz">
+              <option value="blues" ${settings.scale === 'blues' ? 'selected' : ''}>Blues</option>
+              <option value="wholeTone" ${settings.scale === 'wholeTone' ? 'selected' : ''}>Whole Tone</option>
+              <option value="diminished" ${settings.scale === 'diminished' ? 'selected' : ''}>Diminished (Whole-Half)</option>
+            </optgroup>
+            <optgroup label="Indian (Raga)">
+              <option value="bhairav" ${settings.scale === 'bhairav' ? 'selected' : ''}>Bhairav</option>
+              <option value="kafi" ${settings.scale === 'kafi' ? 'selected' : ''}>Kafi</option>
+              <option value="marwa" ${settings.scale === 'marwa' ? 'selected' : ''}>Marwa</option>
+            </optgroup>
+            <optgroup label="Arabic / Middle Eastern">
+              <option value="hijaz" ${settings.scale === 'hijaz' ? 'selected' : ''}>Hijaz</option>
+              <option value="huzam" ${settings.scale === 'huzam' ? 'selected' : ''}>Huzam</option>
+              <option value="bayati" ${settings.scale === 'bayati' ? 'selected' : ''}>Bayati</option>
+            </optgroup>
+            <optgroup label="Japanese">
+              <option value="inSen" ${settings.scale === 'inSen' ? 'selected' : ''}>In Sen</option>
+              <option value="hirajoshi" ${settings.scale === 'hirajoshi' ? 'selected' : ''}>Hirajoshi</option>
+              <option value="iwato" ${settings.scale === 'iwato' ? 'selected' : ''}>Iwato</option>
+            </optgroup>
+            <optgroup label="African">
+              <option value="africanPentatonic" ${settings.scale === 'africanPentatonic' ? 'selected' : ''}>African Pentatonic</option>
+              <option value="ethiopian" ${settings.scale === 'ethiopian' ? 'selected' : ''}>Ethiopian</option>
+            </optgroup>
+            <optgroup label="Exotic / Synthetic">
+              <option value="hungarianMinor" ${settings.scale === 'hungarianMinor' ? 'selected' : ''}>Hungarian Minor</option>
+              <option value="doubleHarmonic" ${settings.scale === 'doubleHarmonic' ? 'selected' : ''}>Double Harmonic</option>
+            </optgroup>
           </select>
         </div>
         
@@ -1784,6 +1985,12 @@
             note[prop] = value === 1;
             const valueDisplay = slider.nextElementSibling;
             valueDisplay.textContent = value === 1 ? 'on' : 'off';
+          }
+          // Special handling for channel (display as 1-16, store as 0-15)
+          else if (prop === 'channel') {
+            note[prop] = value;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = value + 1; // Display 1-16
           }
           // Special handling for pitchRandomization
           else if (prop === 'pitchRandomization') {
@@ -2165,23 +2372,45 @@
       
       drawGrid();
       drawNotes();
-      drawSelectionBox(); // Draw selection indicator on top
+      drawPerformers(); // Draw performers on top of notes
+      drawSelectionBox(); // Draw selection indicator on top of everything
       
       ctx.restore();
     }
     
     // Animation loop
+    let animationFrameId = null;
+    
     function updateLoop(timestamp) {
-      if (isPlaying) {
-        const deltaTime = lastFrameTime ? timestamp - lastFrameTime : 0;
-        lastFrameTime = timestamp;
-        
-        // TODO: Update performers here when implemented
-        
-        render();
+      const deltaTime = lastFrameTime ? timestamp - lastFrameTime : 0;
+      lastFrameTime = timestamp;
+      
+      // Update performers (only when not paused)
+      if (!isPaused) {
+        updatePerformers(deltaTime);
       }
       
-      requestAnimationFrame(updateLoop);
+      render();
+      
+      if (isPlaying) {
+        animationFrameId = requestAnimationFrame(updateLoop);
+      } else {
+        animationFrameId = null;
+      }
+    }
+    
+    function startAnimationLoop() {
+      if (animationFrameId === null) {
+        lastFrameTime = 0;
+        animationFrameId = requestAnimationFrame(updateLoop);
+      }
+    }
+    
+    function stopAnimationLoop() {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
     }
     
     // Mouse wheel for zoom
@@ -2745,9 +2974,6 @@
     // Initialize interaction manager (sets default mode, cursor, and button states)
     interactionManager.setMode('select');
     
-    // Start main update loop
-    updateLoop(0);
-    
     // Initialize MIDI connection at startup
     midi.init();
     
@@ -2786,8 +3012,8 @@
       lastFrameTime = 0;
       playStartTime = performance.now(); // Record play start time
       
-      // TODO: Trigger playback with new simple model
-      console.log('Play clicked - engine gutted, nothing happens yet');
+      spawnPerformersAtLeadIns(); // Spawn performers at lead-in notes
+      startAnimationLoop(); // Start the animation loop
     });
     
     pauseBtn.addEventListener('click', (e) => {
@@ -2808,7 +3034,9 @@
       stopBtn.disabled = true;
       pauseBtn.classList.remove('active');
       
-      render();
+      performers.length = 0; // Clear all performers
+      stopAnimationLoop(); // Stop the animation loop
+      render(); // Final render to show stopped state
     });
     
     // Menu bar dropdown logic
@@ -3119,7 +3347,6 @@
     render();
     
     // Check for ?load=<url> parameter to auto-load a sequence
-    const urlParams = new URLSearchParams(window.location.search);
     const loadUrl = urlParams.get('load');
     if (loadUrl) {
       console.log('Loading sequence from URL:', loadUrl);
