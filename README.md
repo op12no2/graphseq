@@ -1,6 +1,8 @@
 # MIDI graph sequencer
 
-Refactoring/simplifying... got a bit out of hand :)
+WIP. Just a UI at the moment.
+
+
 
 ### Acknowledgements
 
