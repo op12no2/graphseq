@@ -1,16 +1,6 @@
 # MIDI graph sequencer
 
-Try it here:-
-
-https://op12no2.github.io/graphseq/sequencer.html  
-
-### MIDI
-
-On page load the sequencer uses Web Audio which is fine for exploring and playing with the examples. When you click the red MIDI button, it will try and connect to loopMIDI on Windows and IAC on macOS; both of which can then be connected to your DAW.
-
-### Examples
-
-[Example 1](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/example_1.json)
+Refactoring/simlifying... got a bit out of hand :)
 
 ### Keyboard assignments (PC-speak)
 
