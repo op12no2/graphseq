@@ -1,0 +1,3144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MIDI Graph Sequencer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #1a1a1a;
+      font-family: monospace;
+      color: #aaa;
+      overflow: hidden;
+    }
+    
+    #properties-sidebar {
+      position: fixed;
+      top: 64px;
+      left: 0;
+      bottom: 0;
+      width: 240px;
+      background: #242424;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+      padding: 16px;
+      box-sizing: border-box;
+      z-index: 50;
+    }
+    
+    #properties-sidebar h3 {
+      margin: 0 0 12px 0;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+    }
+    
+    .property-section {
+      margin-bottom: 20px;
+    }
+    
+    .property-label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .note-btn {
+      padding: 8px 4px;
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 3px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 11px;
+      text-align: center;
+      transition: all 0.1s;
+    }
+    
+    .note-btn:hover {
+      background: #333;
+      border-color: #4a4a4a;
+    }
+    
+    .note-btn.selected {
+      background: #4a4a4a;
+      border-color: #5a5a5a;
+      color: #fff;
+    }
+    
+    .octave-selector {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    
+    .octave-btn {
+      flex: 1;
+      padding: 6px;
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 3px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 10px;
+      text-align: center;
+    }
+    
+    .octave-btn:hover {
+      background: #333;
+    }
+    
+    .octave-btn.selected {
+      background: #4a4a4a;
+      border-color: #5a5a5a;
+      color: #fff;
+    }
+    
+    .color-palette-inline {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    
+    .color-swatch-inline {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.1s;
+    }
+    
+    .color-swatch-inline:hover {
+      transform: scale(1.15);
+    }
+    
+    .color-swatch-inline.selected {
+      border-color: #fff;
+      box-shadow: 0 0 6px rgba(255,255,255,0.4);
+    }
+    
+    .property-slider {
+      width: 100%;
+      margin-top: 4px;
+    }
+    
+    
+    .property-select {
+      width: 100%;
+      padding: 6px 8px;
+      background: #2a2a2a;
+      color: #ccc;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    
+    .property-select:hover {
+      border-color: #666;
+    }
+    
+    .property-select:focus {
+      outline: none;
+      border-color: #888;
+    }
+    
+    .property-button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      background: #3a3a3a;
+      color: #ccc;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+    
+    .property-button:hover {
+      background: #4a4a4a;
+      border-color: #666;
+    }
+    
+    .property-button-warning {
+      background: #664400;
+      border-color: #886600;
+    }
+    
+    .property-button-warning:hover {
+      background: #885500;
+      border-color: #aa7700;
+    }
+    
+    .property-button-danger {
+      background: #662222;
+      border-color: #883333;
+    }
+    
+    .property-button-danger:hover {
+      background: #883333;
+      border-color: #aa4444;
+    }
+    
+    .property-value {
+      font-size: 11px;
+      color: #ccc;
+      margin-top: 4px;
+    }
+    
+    .property-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    
+    .property-checkbox input {
+      cursor: pointer;
+    }
+    
+    #menu-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 24px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 200;
+      gap: 16px;
+    }
+    
+    .menu-item {
+      position: relative;
+      color: #888;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 3px;
+      user-select: none;
+    }
+    
+    .menu-item:hover {
+      background: #2a2a2a;
+      color: #ccc;
+    }
+    
+    .menu-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      min-width: 120px;
+      display: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 300;
+    }
+    
+    .menu-dropdown.active {
+      display: block;
+    }
+    
+    .menu-dropdown-item {
+      padding: 6px 12px;
+      color: #ccc;
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    .menu-dropdown-item:hover {
+      background: #3a3a3a;
+      color: #fff;
+    }
+    
+    .menu-dropdown-item.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    
+    .menu-dropdown-separator {
+      height: 1px;
+      background: #444;
+      margin: 4px 0;
+    }
+    
+    .menu-dropdown-item:first-child {
+      border-radius: 4px 4px 0 0;
+    }
+    
+    .menu-dropdown-item:last-child {
+      border-radius: 0 0 4px 4px;
+    }
+    
+    #container {
+      position: fixed;
+      top: 64px;
+      left: 240px;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    #midi-status {
+      position: fixed;
+      top: 38px;
+      left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #888;
+      z-index: 100;
+    }
+    
+    #transport {
+      position: fixed;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      z-index: 100;
+    }
+    
+    .transport-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      color: #888;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      -webkit-text-fill-color: #888; /* Force text color on Chromebook */
+    }
+    
+    .transport-btn:hover {
+      color: #ddd;
+      background: rgba(255, 255, 255, 0.05);
+      -webkit-text-fill-color: #ddd;
+    }
+    
+    .transport-btn.active {
+      color: #4ecdc4;
+      background: rgba(78, 205, 196, 0.1);
+      -webkit-text-fill-color: #4ecdc4;
+    }
+    
+    .transport-btn:disabled {
+      color: #444;
+      cursor: not-allowed;
+      -webkit-text-fill-color: #444;
+    }
+    
+    .transport-btn:disabled:hover {
+      background: transparent;
+    }
+    
+    #mode-buttons {
+      position: fixed;
+      top: 28px;
+      right: 10px;
+      display: flex;
+      gap: 4px;
+      z-index: 100;
+    }
+    
+    .mode-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #888;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    .mode-btn:hover {
+      color: #ddd;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #666;
+    }
+    
+    .mode-btn.active {
+      color: #4ecdc4;
+      background: rgba(78, 205, 196, 0.1);
+      border-color: #4ecdc4;
+    }
+    
+    #status-text {
+      transition: opacity 2s ease-out;
+    }
+    
+    #status-text.fade-out {
+      opacity: 0;
+    }
+    
+    .status-light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid #333;
+    }
+    
+    .status-light.connected {
+      background: #4a4;
+      box-shadow: 0 0 8px #4a4;
+    }
+    
+    .status-light.disconnected {
+      background: #a44;
+      box-shadow: 0 0 8px #a44;
+      cursor: pointer;
+    }
+    
+    .status-light.disconnected:hover {
+      background: #c55;
+      box-shadow: 0 0 12px #c55;
+    }
+    
+    canvas {
+      border: 1px solid #333;
+    }
+    
+  </style>
+</head>
+<body>
+  <!-- Properties Sidebar -->
+  <div id="properties-sidebar">
+    <div id="properties-content">
+      <h3>Properties</h3>
+      <div class="property-section">
+        <div class="property-label">Nothing Selected</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="menu-bar">
+    <div class="menu-item" id="menu-file">
+      File
+      <div class="menu-dropdown" id="file-dropdown">
+        <div class="menu-dropdown-item" id="menu-save">Save</div>
+        <div class="menu-dropdown-item" id="menu-load">Open</div>
+      </div>
+    </div>
+    <div class="menu-item" id="menu-edit">
+      Edit
+      <div class="menu-dropdown" id="edit-dropdown">
+        <div class="menu-dropdown-item" id="menu-copy">Copy<span style="float: right; opacity: 0.5; margin-left: 20px;">Ctrl+C</span></div>
+        <div class="menu-dropdown-item" id="menu-paste">Paste<span style="float: right; opacity: 0.5; margin-left: 20px;">Ctrl+V</span></div>
+      </div>
+    </div>
+    <div class="menu-item" id="menu-view">
+      View
+      <div class="menu-dropdown" id="view-dropdown">
+        <div class="menu-dropdown-item" id="menu-settings">Settings<span style="float: right; opacity: 0.5; margin-left: 20px;">Esc</span></div>
+        <div class="menu-dropdown-separator"></div>
+        <div class="menu-dropdown-item disabled">Shift + drag to Pan</div>
+        <div class="menu-dropdown-item disabled">Alt + drag to Zoom</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="container">
+    <div id="midi-status">
+      <div class="status-light disconnected" id="status-light" title="Click to connect to MIDI"></div>
+      <span id="status-text">MIDI Disconnected</span>
+    </div>
+    <div id="transport">
+      <button class="transport-btn" id="play-btn" title="Play">▶</button>
+      <button class="transport-btn" id="pause-btn" title="Pause" disabled>⏸</button>
+      <button class="transport-btn" id="stop-btn" title="Stop" disabled>⏹</button>
+    </div>
+    <div id="settings-button-container" style="position: fixed; top: 28px; right: 154px; z-index: 100;">
+      <button class="mode-btn" id="show-settings-btn" title="Sequencer Settings">⚙</button>
+    </div>
+    <div id="mode-buttons">
+      <button class="mode-btn active" id="mode-select" title="Select & Move (1)">⬚</button>
+      <button class="mode-btn" id="mode-add-note" title="Add Note (2)">●</button>
+      <button class="mode-btn" id="mode-add-link" title="Add Link (3)">→</button>
+    </div>
+    <canvas id="canvas"></canvas>
+  </div>
+  
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const gridSpacing = 30; // Visual grid spacing - use zoom to adjust scale
+    
+    // Theme definitions
+    const themes = {
+      dark: {
+        name: 'Dark',
+        backgroundColor: '#0a0a0a',
+        gridColor: '#1a1a1a',
+        linkColor: '#cccccc'
+      }
+      // More themes can be added here later
+    };
+    
+    // Curated color palette - 16 colors that look good on dark background
+    const colorPalette = [
+      '#ff6b6b', '#ee5a6f', '#c44569', '#a8336a', // Reds/Pinks
+      '#4ecdc4', '#45b7d1', '#5f9ef7', '#3867d6', // Cyans/Blues
+      '#feca57', '#ff9ff3', '#fd79a8', '#a29bfe', // Yellows/Purples
+      '#26de81', '#20bf6b', '#95e1d3', '#888888'  // Greens/Gray
+    ];
+    
+    const notes = new Map(); // key: "x,y" -> note object
+    
+    // Camera state
+    let zoom = 1.0;
+    let panX = 0;
+    let panY = 0;
+    
+    // Selection tracking for properties sidebar
+    let selectedNote = null;
+    let selectedLink = null;
+    
+    // Multi-selection (bounding box)
+    let selectedItems = {
+      notes: [],  // Array of selected notes
+      links: []   // Array of selected link objects: {fromNote, link}
+    };
+    
+    // Clipboard for copy/paste
+    let clipboard = {
+      notes: [],  // Copied notes with relative positions
+      links: []   // Copied links (internal to clipboard notes)
+    };
+    
+    // === INTERACTION MANAGER ===
+    // Unified system for handling all mouse interactions
+    const interactionManager = {
+      // Current cursor mode
+      mode: 'select', // 'select', 'add-note', 'add-link'
+      
+      // Pan state
+      pan: {
+        active: false,
+        lastX: 0,
+        lastY: 0
+      },
+      
+      // Zoom state
+      zoom: {
+        active: false,
+        startX: 0,
+        startY: 0,
+        startValue: 1.0
+      },
+      
+      // Note drag state (select mode)
+      drag: {
+        active: false,
+        note: null,
+        startWorld: null,
+        noteOriginalPos: null
+      },
+      
+      // Selection box state (select mode)
+      selectionBox: {
+        active: false,
+        startWorld: null,  // {x, y} in world coords
+        endWorld: null     // {x, y} in world coords
+      },
+      
+      // Link creation state (add-link mode)
+      link: {
+        active: false,      // true when actively dragging a link
+        fromNote: null,     // source note for link in progress
+        mousePos: null,     // current mouse position for preview
+        dragStartPos: null  // mouse pos when mousedown - to detect drag vs click
+      },
+      
+      // Set cursor mode
+      setMode(newMode) {
+        this.mode = newMode;
+        this.reset(); // Clear any active interactions
+        this.updateCursor();
+        this.updateModeButtons();
+      },
+      
+      // Reset all interaction states
+      reset() {
+        this.pan.active = false;
+        this.zoom.active = false;
+        this.drag.active = false;
+        this.drag.note = null;
+        this.selectionBox.active = false;
+        this.selectionBox.startWorld = null;
+        this.selectionBox.endWorld = null;
+        this.link.active = false;
+        this.link.fromNote = null;
+        this.link.mousePos = null;
+      },
+      
+      // Update cursor based on mode
+      updateCursor() {
+        const cursors = {
+          'select': 'default',
+          'add-note': 'crosshair',
+          'add-link': 'pointer'
+        };
+        canvas.style.cursor = cursors[this.mode] || 'default';
+      },
+      
+      // Update mode button states
+      updateModeButtons() {
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        const modeMap = {
+          'select': 'mode-select',
+          'add-note': 'mode-add-note',
+          'add-link': 'mode-add-link'
+        };
+        
+        const activeBtn = document.getElementById(modeMap[this.mode]);
+        if (activeBtn) {
+          activeBtn.classList.add('active');
+        }
+      }
+    };
+    
+    // Template copies - initialized with factory defaults, updated when properties change
+    let lastNoteTemplate = {
+      midiNotes: [60],     // Array of MIDI notes (C4) - chords supported
+      channel: 0,
+      velocity: 64,        // -6dB (standard default)
+      pitchRandomization: 0, // 0-24 semitones random variation
+      flavor: 0,           // Note type: 0=regular (circle), future: 1=splitter, etc.
+      color: '#3867d6',    // Lovely blue (8th color in palette)
+      isStart: false       // Never copy root status to new notes
+    };
+    
+    let lastLinkTemplate = {
+      weight: 1            // 1-10, weighted random selection
+    };
+    
+    // Model metadata
+    let modelName = 'Untitled';
+    
+    // MIDI state
+    const midi = {
+      access: null,
+      output: null,
+      connected: false,
+      
+      updateStatus() {
+        const statusLight = document.getElementById('status-light');
+        const statusText = document.getElementById('status-text');
+        
+        if (this.connected) {
+          statusLight.className = 'status-light connected';
+          statusText.textContent = 'MIDI Connected';
+        } else {
+          statusLight.className = 'status-light disconnected';
+          statusText.textContent = 'MIDI Disconnected';
+        }
+      },
+      
+      async init() {
+        try {
+          this.access = await navigator.requestMIDIAccess();
+          
+          // Find virtual MIDI port (loopMIDI on Windows, IAC Driver on Mac, or any virtual port)
+          for (const output of this.access.outputs.values()) {
+            const name = output.name.toLowerCase();
+            // Check for common virtual MIDI ports
+            if (name.includes('loopmidi') || 
+                name.includes('loop midi') ||
+                name.includes('iac') ||
+                name.includes('bus') ||
+                name.includes('virtual')) {
+              this.output = output;
+              this.connected = true;
+              this.updateStatus();
+              console.log('Connected to MIDI port:', output.name);
+              return true;
+            }
+          }
+          
+          // If no virtual port found, try to use the first available output
+          if (this.access.outputs.size > 0) {
+            this.output = this.access.outputs.values().next().value;
+            this.connected = true;
+            this.updateStatus();
+            console.log('Connected to MIDI port:', this.output.name);
+            return true;
+          }
+          
+          console.warn('No MIDI ports found');
+          this.updateStatus();
+          return false;
+        }
+        catch (err) {
+          console.error('MIDI initialization failed:', err);
+          this.updateStatus();
+          return false;
+        }
+      },
+      
+      sendNote(note, velocity, channel = 0) {
+        if (!this.output) return;
+        const status = 0x90 | (channel & 0x0F);
+        this.output.send([status, note & 0x7F, velocity & 0x7F]);
+      },
+      
+      sendNoteOff(note, channel = 0) {
+        if (!this.output) return;
+        const status = 0x80 | (channel & 0x0F);
+        this.output.send([status, note & 0x7F, 0]);
+      },
+      
+      sendCC(cc, value, channel = 0) {
+        if (!this.output) return;
+        const status = 0xB0 | (channel & 0x0F);
+        this.output.send([status, cc & 0x7F, value & 0x7F]);
+      }
+    };
+    
+    // Context menu state
+    
+    // Transport state
+    let isPlaying = false;
+    let isPaused = false;
+    let playStartTime = 0; // When play button was pressed
+    
+    let lastFrameTime = 0;
+    
+    // Settings
+    let settings = {
+      version: "0.1",
+      // Graph settings
+      theme: 'dark',
+      backgroundColor: themes.dark.backgroundColor,
+      gridColor: themes.dark.gridColor,
+      linkColor: themes.dark.linkColor,
+      noteColor: '#3867d6', // 8th color in palette - lovely blue
+      noteSizes: [10], // Size per flavor: [0]=regular note, future: [1]=splitter, etc.
+      noteShape: 'circle',
+      
+      // Musical settings
+      keySignature: 0, // 0=C, 1=C#, 2=D, etc.
+      scale: 'chromatic', // Scale for quantization
+      globalPitchRandomisation: 0, // 0-24 semitones, added to note randomisation
+      
+      // Visual tuning constants
+      arrowSize: 6, // Link arrow head size
+      linkLineWidth: 1.5, // Link stroke width
+      linkCreatingDashPattern: [5, 5], // Dash pattern while creating link
+      noteStrokeWidth: 2, // Note outline width
+      noteRootStrokeWidth: 3, // Root note outline width (thicker)
+      gridLineWidth: 1, // Grid line width
+      linkClickThreshold: 8, // Distance in pixels to click a link
+      
+      // Note fire visual feedback
+      noteFireFlashDuration: 150, // ms to show note fire flash
+      noteFireFlashBrightness: 1.3, // Size multiplier when fired (1.0 = normal)
+      noteFireFlashColor: '#cccccc', // Flash color (use less bright gray instead of white)
+      
+      // Color picker
+      colorSwatchSize: 16, // px - size of color picker swatches
+      
+      // Selection box
+      selectionBoxPaddingNote: 20, // Extra space around selected notes
+      linkSelectionBoxScale: 0.3, // Link selection box size as fraction of link length
+      selectionBoxDashPattern: [4, 4], // Dotted pattern for selection box
+      selectionBoxColor: '#aaaaaa', // Selection box color (darker gray)
+      selectionBoxLineWidth: 1, // Selection box stroke width
+      selectionBoxXSize: 10, // Size of X marker at center of selection box
+      bidirectionalLinkOffset: 3, // Perpendicular offset for bidirectional links
+      
+      // Note size limits
+      noteMinSize: 4, // Minimum note size
+      noteMaxSize: 20, // Maximum note size
+      
+      // System settings
+      bpm: 120
+    };
+    
+    // Apply theme colors to settings
+    function applyTheme(themeName) {
+      const theme = themes[themeName];
+      if (theme) {
+        settings.theme = themeName;
+        settings.backgroundColor = theme.backgroundColor;
+        settings.gridColor = theme.gridColor;
+        settings.linkColor = theme.linkColor;
+      }
+    }
+    
+    // Draw different note shapes
+    function drawNoteShape(ctx, x, y, size, shape) {
+      ctx.beginPath();
+      
+      switch(shape) {
+        case 'circle':
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          break;
+          
+        case 'square':
+          ctx.rect(x - size, y - size, size * 2, size * 2);
+          break;
+          
+        case 'hexagon':
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i - Math.PI / 2;
+            const px = x + size * Math.cos(angle);
+            const py = y + size * Math.sin(angle);
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          break;
+          
+        default:
+          // Fallback to circle for any unknown shape
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          break;
+      }
+    }
+    
+    // Factory function to create a new note with current template settings
+    function createNote(x, y) {
+      return {
+        x: x,
+        y: y,
+        midiNotes: [...lastNoteTemplate.midiNotes], // Copy array
+        channel: lastNoteTemplate.channel,
+        velocity: lastNoteTemplate.velocity,
+        pitchRandomization: lastNoteTemplate.pitchRandomization,
+        rule: null,
+        links: [],
+        flavor: lastNoteTemplate.flavor,
+        color: lastNoteTemplate.color,
+        isStart: false  // New notes are never root notes
+      };
+    }
+    
+    // MIDI note conversion utilities
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    
+    // Scale definitions (intervals from root)
+    const scales = {
+      chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      major: [0, 2, 4, 5, 7, 9, 11],
+      minor: [0, 2, 3, 5, 7, 8, 10],
+      harmonicMinor: [0, 2, 3, 5, 7, 8, 11],
+      melodicMinor: [0, 2, 3, 5, 7, 9, 11],
+      majorPentatonic: [0, 2, 4, 7, 9],
+      minorPentatonic: [0, 3, 5, 7, 10],
+      dorian: [0, 2, 3, 5, 7, 9, 10],
+      phrygian: [0, 1, 3, 5, 7, 8, 10],
+      lydian: [0, 2, 4, 6, 7, 9, 11],
+      mixolydian: [0, 2, 4, 5, 7, 9, 10],
+      locrian: [0, 1, 3, 5, 6, 8, 10],
+      wholeTone: [0, 2, 4, 6, 8, 10],
+      diminished: [0, 2, 3, 5, 6, 8, 9, 11],
+      blues: [0, 3, 5, 6, 7, 10]
+    };
+    
+    // Quantize MIDI note to scale (nearest note)
+    function quantizeToScale(midiNote, keySignature, scaleName) {
+      if (scaleName === 'chromatic') return midiNote; // No quantization
+      
+      const scale = scales[scaleName];
+      if (!scale) return midiNote; // Unknown scale
+      
+      // Get note within octave (0-11)
+      const noteInOctave = midiNote % 12;
+      const octave = Math.floor(midiNote / 12);
+      
+      // Transpose scale by key signature
+      const transposedScale = scale.map(interval => (interval + keySignature) % 12);
+      
+      // Find nearest note in scale
+      let minDistance = 12;
+      let nearestNote = noteInOctave;
+      
+      for (const scaleNote of transposedScale) {
+        const distance = Math.abs(noteInOctave - scaleNote);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestNote = scaleNote;
+        }
+      }
+      
+      return octave * 12 + nearestNote;
+    }
+    
+    function midiToNoteName(midi) {
+      const octave = Math.floor(midi / 12) - 1;
+      const note = noteNames[midi % 12];
+      return note + octave;
+    }
+    
+    // Parse note name to MIDI number (e.g. "C4" -> 60, "C#4" -> 61, "Bb3" -> 58)
+    function parseNoteName(name) {
+      const match = name.trim().match(/^([A-Ga-g])([#b]?)(-?\d+)$/);
+      if (!match) return 60; // Default to C4 on invalid input
+      
+      let [, noteLetter, accidental, octave] = match;
+      noteLetter = noteLetter.toUpperCase();
+      octave = parseInt(octave);
+      
+      // Find base note index
+      const baseNotes = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+      let noteIndex = baseNotes[noteLetter];
+      if (noteIndex === undefined) return 60;
+      
+      // Apply accidental
+      if (accidental === '#') noteIndex++;
+      if (accidental === 'b') noteIndex--;
+      
+      // Handle wraparound
+      if (noteIndex < 0) {
+        noteIndex += 12;
+        octave--;
+      }
+      if (noteIndex >= 12) {
+        noteIndex -= 12;
+        octave++;
+      }
+      
+      const midi = (octave + 1) * 12 + noteIndex;
+      return Math.max(0, Math.min(127, midi)); // Clamp to valid MIDI range
+    }
+    
+    // Parse chord string to MIDI array (e.g. "C4, E4, G4" -> [60, 64, 67])
+    function parseChordString(str) {
+      if (!str || !str.trim()) return [60]; // Default to C4
+      
+      const noteStrings = str.split(/[,\s]+/).filter(s => s.length > 0);
+      const midiNotes = noteStrings.map(parseNoteName);
+      
+      return midiNotes.length > 0 ? midiNotes : [60];
+    }
+    
+    // Format MIDI array to chord string (e.g. [60, 64, 67] -> "C4, E4, G4")
+    function formatChordString(midiNotes) {
+      if (!midiNotes || midiNotes.length === 0) return 'C4';
+      return midiNotes.map(midiToNoteName).join(', ');
+    }
+    
+    
+    // Note triggering (called by performer system when implemented)
+    function triggerNoteSound(note) {
+      const velocity = note.velocity !== undefined ? note.velocity : 100;
+      
+      // Skip entirely if velocity is 0 (silent note - no MIDI traffic)
+      if (velocity === 0) {
+        return;
+      }
+      
+      const channel = note.channel || 0;
+      const noteRand = note.pitchRandomization || 0;
+      const globalRand = settings.globalPitchRandomisation || 0;
+      const totalRand = noteRand + globalRand; // Sum of global and note randomisation
+      const midiNotes = note.midiNotes || [60];
+      
+      // Apply randomization and quantization to ALL notes in the chord
+      // Use same random offset for all notes to preserve chord shape
+      const randomOffset = totalRand > 0 ? 
+        Math.floor(Math.random() * (totalRand * 2 + 1)) - totalRand : 0;
+      
+      // Trigger each note in the array
+      for (let midiNote of midiNotes) {
+        // Apply randomization
+        midiNote += randomOffset;
+        
+        // Quantize to scale
+        midiNote = quantizeToScale(midiNote, settings.keySignature, settings.scale);
+        
+        // Clamp to valid MIDI range (0-127)
+        midiNote = Math.max(0, Math.min(127, midiNote));
+        
+        // Send MIDI note-on (no note-off - triggers only!)
+        midi.sendNote(midiNote, velocity, channel);
+      }
+      
+      // Mark note as just fired for visual feedback
+      note.lastFireTime = performance.now();
+    }
+    
+    
+    function posKey(x, y) {
+      return `${x},${y}`;
+    }
+    
+    // Sort a note's links by angle (clockwise from top) for predictable arrow key navigation
+    function sortNoteLinks(note) {
+      if (!note.links || note.links.length <= 1) return; // No sorting needed
+      
+      note.links.sort((a, b) => {
+        // Calculate angles from note to each link target
+        const angleA = Math.atan2(a.y - note.y, a.x - note.x);
+        const angleB = Math.atan2(b.y - note.y, b.x - note.x);
+        return angleA - angleB;
+      });
+    }
+    
+    function snapToGrid(x, y) {
+      return {
+        x: Math.round(x / gridSpacing) * gridSpacing,
+        y: Math.round(y / gridSpacing) * gridSpacing
+      };
+    }
+    
+    // Copy selected items to clipboard
+    function copySelection() {
+      if (selectedItems.notes.length > 0) {
+        // Multi-selection copy
+        
+        // Find bounding box center of selection
+        let minX = Infinity, minY = Infinity;
+        for (const note of selectedItems.notes) {
+          minX = Math.min(minX, note.x);
+          minY = Math.min(minY, note.y);
+        }
+        
+        // Store notes with relative positions from top-left
+        clipboard.notes = selectedItems.notes.map(note => ({
+          relX: note.x - minX,
+          relY: note.y - minY,
+          midiNotes: [...note.midiNotes],
+          channel: note.channel,
+          velocity: note.velocity,
+          pitchRandomization: note.pitchRandomization,
+          flavor: note.flavor !== undefined ? note.flavor : 0,
+          color: note.color
+        }));
+        
+        // Store internal links (links between copied notes)
+        clipboard.links = [];
+        for (let i = 0; i < selectedItems.notes.length; i++) {
+          const fromNote = selectedItems.notes[i];
+          for (const link of fromNote.links) {
+            // Check if target is also in selection
+            const toIndex = selectedItems.notes.findIndex(n => 
+              n.x === link.x && n.y === link.y
+            );
+            if (toIndex !== -1) {
+              clipboard.links.push({
+                fromIndex: i,
+                toIndex: toIndex,
+                weight: link.weight
+              });
+            }
+          }
+        }
+        return true;
+      }
+      else if (selectedNote) {
+        // Single note copy
+        clipboard.notes = [{
+          relX: 0,
+          relY: 0,
+          midiNotes: [...selectedNote.midiNotes],
+          channel: selectedNote.channel,
+          velocity: selectedNote.velocity,
+          pitchRandomization: selectedNote.pitchRandomization,
+          flavor: selectedNote.flavor !== undefined ? selectedNote.flavor : 0,
+          color: selectedNote.color
+        }];
+        clipboard.links = [];
+        return true;
+      }
+      
+      return false; // Nothing to copy
+    }
+    
+    // Paste clipboard contents
+    function pasteClipboard() {
+      if (clipboard.notes.length === 0) return false;
+      
+      // Paste at center of viewport
+      const centerX = -panX / zoom + canvas.width / (2 * zoom);
+      const centerY = -panY / zoom + canvas.height / (2 * zoom);
+      
+      // Create new notes
+      const newNotes = [];
+      for (const clipNote of clipboard.notes) {
+        const x = centerX + clipNote.relX;
+        const y = centerY + clipNote.relY;
+        const snapped = snapToGrid(x, y);
+        const key = posKey(snapped.x, snapped.y);
+        
+        // Skip if position already occupied
+        if (notes.has(key)) continue;
+        
+        const note = {
+          x: snapped.x,
+          y: snapped.y,
+          midiNotes: [...clipNote.midiNotes],
+          channel: clipNote.channel,
+          velocity: clipNote.velocity,
+          pitchRandomization: clipNote.pitchRandomization,
+          rule: null,
+          links: [],
+          flavor: clipNote.flavor !== undefined ? clipNote.flavor : 0,
+          color: clipNote.color,
+          isStart: false
+        };
+        
+        notes.set(key, note);
+        newNotes.push(note);
+      }
+      
+      // Recreate internal links
+      for (const clipLink of clipboard.links) {
+        const fromNote = newNotes[clipLink.fromIndex];
+        const toNote = newNotes[clipLink.toIndex];
+        
+        if (fromNote && toNote) {
+          fromNote.links.push({
+            x: toNote.x,
+            y: toNote.y,
+            weight: clipLink.weight
+          });
+        }
+      }
+      
+      // Select the newly pasted notes
+      selectedNote = null;
+      selectedLink = null;
+      selectedItems.notes = newNotes;
+      selectedItems.links = [];
+      
+      updatePropertiesSidebar();
+      render();
+      
+      return true;
+    }
+    
+    // Transform screen coordinates to world coordinates
+    function screenToWorld(screenX, screenY) {
+      return {
+        x: (screenX - panX) / zoom,
+        y: (screenY - panY) / zoom
+      };
+    }
+    
+    function getWorldPosition(e) {
+      const rect = canvas.getBoundingClientRect();
+      const screenX = e.clientX - rect.left;
+      const screenY = e.clientY - rect.top;
+      return screenToWorld(screenX, screenY);
+    }
+    
+    // Convert stored client coordinates (not from event) to world coordinates
+    function clientToWorld(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const screenX = clientX - rect.left;
+      const screenY = clientY - rect.top;
+      return screenToWorld(screenX, screenY);
+    }
+    
+    // Find note at world position (within noteRadius distance)
+    function findNoteAt(worldX, worldY) {
+      for (const note of notes.values()) {
+        const flavor = note.flavor !== undefined ? note.flavor : 0;
+        const size = settings.noteSizes[flavor] || settings.noteSizes[0] || 10;
+        const dx = note.x - worldX;
+        const dy = note.y - worldY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= size) {
+          return note;
+        }
+      }
+      return null;
+    }
+    
+    // Find link at world position (within threshold distance to line)
+    function findLinkAt(worldX, worldY) {
+      const threshold = settings.linkClickThreshold;
+      
+      // Helper to check if a point is near a link
+      const checkLink = (note, link, linkIndex) => {
+        const targetKey = posKey(link.x, link.y);
+        const targetNote = notes.get(targetKey);
+        
+        if (!targetNote) return null;
+        
+        // Calculate distance from point to line segment
+        const x1 = note.x;
+        const y1 = note.y;
+        const x2 = targetNote.x;
+        const y2 = targetNote.y;
+        
+        const C = x2 - x1;
+        const D = y2 - y1;
+        const lenSq = C * C + D * D;
+        
+        // If notes are very close (lenSq < 100 = distance < 10px), 
+        // just check if click is near midpoint
+        if (lenSq < 100) {
+          const midX = (x1 + x2) / 2;
+          const midY = (y1 + y2) / 2;
+          const dx = worldX - midX;
+          const dy = worldY - midY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance <= threshold) {
+            return { sourceNote: note, linkIndex: linkIndex, link: link };
+          }
+          return null;
+        }
+        
+        const A = worldX - x1;
+        const B = worldY - y1;
+        const dot = A * C + B * D;
+        const param = dot / lenSq;
+        
+        // Only accept hits in the middle third of the line (0.33 to 0.67)
+        if (param < 0.33 || param > 0.67) {
+          return null;
+        }
+        
+        const xx = x1 + param * C;
+        const yy = y1 + param * D;
+        
+        const dx = worldX - xx;
+        const dy = worldY - yy;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance <= threshold) {
+          return { sourceNote: note, linkIndex: linkIndex, link: link };
+        }
+        
+        return null;
+      };
+      
+      // Check all notes
+      for (const note of notes.values()) {
+        for (let i = 0; i < note.links.length; i++) {
+          const result = checkLink(note, note.links[i], i);
+          if (result) return result;
+        }
+      }
+      
+      return null;
+    }
+    
+    // Resize canvas to fit window
+    function resizeCanvas() {
+      const container = document.getElementById('container');
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      render();
+    }
+    
+    function drawGrid() {
+      ctx.lineWidth = settings.gridLineWidth / zoom;
+      
+      // Calculate visible world bounds
+      const topLeft = screenToWorld(0, 0);
+      const bottomRight = screenToWorld(canvas.width, canvas.height);
+      
+      // Extend grid beyond visible area
+      const startX = Math.floor(topLeft.x / gridSpacing) * gridSpacing;
+      const endX = Math.ceil(bottomRight.x / gridSpacing) * gridSpacing;
+      const startY = Math.floor(topLeft.y / gridSpacing) * gridSpacing;
+      const endY = Math.ceil(bottomRight.y / gridSpacing) * gridSpacing;
+      
+      // Vertical lines (with beat emphasis every 4 lines = quarter note)
+      for (let x = startX; x <= endX; x += gridSpacing) {
+        const gridIndex = Math.round(x / gridSpacing);
+        const isBeatLine = gridIndex % 4 === 0;
+        
+        if (isBeatLine) {
+          ctx.strokeStyle = lightenColor(settings.gridColor, 0.3);
+        } else {
+          ctx.strokeStyle = settings.gridColor;
+        }
+        
+        ctx.beginPath();
+        ctx.moveTo(x, startY);
+        ctx.lineTo(x, endY);
+        ctx.stroke();
+      }
+      
+      // Horizontal lines (with beat emphasis every 4 lines)
+      for (let y = startY; y <= endY; y += gridSpacing) {
+        const gridIndex = Math.round(y / gridSpacing);
+        const isBeatLine = gridIndex % 4 === 0;
+        
+        if (isBeatLine) {
+          ctx.strokeStyle = lightenColor(settings.gridColor, 0.3);
+        } else {
+          ctx.strokeStyle = settings.gridColor;
+        }
+        
+        ctx.beginPath();
+        ctx.moveTo(startX, y);
+        ctx.lineTo(endX, y);
+        ctx.stroke();
+      }
+    }
+    
+    // Helper to lighten a color
+    function lightenColor(color, amount) {
+      // Parse hex color
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      
+      // Lighten
+      const nr = Math.min(255, Math.floor(r + (255 - r) * amount));
+      const ng = Math.min(255, Math.floor(g + (255 - g) * amount));
+      const nb = Math.min(255, Math.floor(b + (255 - b) * amount));
+      
+      return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+    }
+    
+    function drawNotes() {
+      const arrowSize = settings.arrowSize;
+      
+      // Helper to draw a single link
+      const drawLink = (note, link, color) => {
+        const targetKey = posKey(link.x, link.y);
+        const targetNote = notes.get(targetKey);
+        if (!targetNote) return;
+        
+        // Check if there's a reverse link (bidirectional)
+        const hasReverseLink = targetNote.links.some(l => 
+          l.x === note.x && l.y === note.y
+        );
+        
+        let startX = note.x;
+        let startY = note.y;
+        let endX = targetNote.x;
+        let endY = targetNote.y;
+        
+        // If bidirectional, offset this link to the right of the line direction
+        if (hasReverseLink) {
+          const dx = endX - startX;
+          const dy = endY - startY;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          
+          // Perpendicular offset (right side)
+          const perpX = -dy / len * settings.bidirectionalLinkOffset;
+          const perpY = dx / len * settings.bidirectionalLinkOffset;
+          
+          startX += perpX;
+          startY += perpY;
+          endX += perpX;
+          endY += perpY;
+        }
+        
+        // Draw line with provided color
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+        
+        // Draw arrow head
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const angle = Math.atan2(dy, dx);
+        const len = Math.sqrt(dx * dx + dy * dy);
+        
+        const targetFlavor = targetNote.flavor !== undefined ? targetNote.flavor : 0;
+        const targetSize = settings.noteSizes[targetFlavor] || settings.noteSizes[0] || 10;
+        
+        // Position arrow at edge of target note circle, not center
+        const arrowX = startX + (dx / len) * (len - targetSize);
+        const arrowY = startY + (dy / len) * (len - targetSize);
+        
+        ctx.save();
+        ctx.setLineDash([]); // Ensure arrow is solid
+        ctx.translate(arrowX, arrowY);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-arrowSize, -arrowSize / 2);
+        ctx.lineTo(-arrowSize, arrowSize / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      };
+      
+      // Draw all links
+      ctx.lineWidth = settings.linkLineWidth;
+      ctx.setLineDash([]); // Solid
+      
+      for (const note of notes.values()) {
+        for (const link of note.links) {
+          drawLink(note, link, settings.linkColor);
+        }
+      }
+      
+      // Phase indicators were removed - this section is now empty
+      
+      // Draw link being created
+      if (interactionManager.link.fromNote && interactionManager.link.mousePos) {
+        ctx.strokeStyle = settings.linkColor;
+        ctx.lineWidth = settings.linkLineWidth;
+        ctx.setLineDash(settings.linkCreatingDashPattern);
+        ctx.beginPath();
+        ctx.moveTo(interactionManager.link.fromNote.x, interactionManager.link.fromNote.y);
+        ctx.lineTo(interactionManager.link.mousePos.x, interactionManager.link.mousePos.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      
+      // Draw notes on top
+      for (const note of notes.values()) {
+        ctx.save(); // Isolate canvas state for each note
+        
+        // Flavor determines shape and size: 0=circle (regular note), future: 1=splitter, etc.
+        const flavor = note.flavor !== undefined ? note.flavor : 0;
+        const shape = 'circle'; // For now, all notes are circles (flavor 0)
+        const color = note.color || settings.noteColor;
+        const size = settings.noteSizes[flavor] || settings.noteSizes[0] || 10;
+        
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = settings.noteStrokeWidth;
+        
+        // Check if note recently fired and should flash
+        const now = performance.now();
+        const timeSinceFire = note.lastFireTime ? now - note.lastFireTime : Infinity;
+        const isFlashing = timeSinceFire < settings.noteFireFlashDuration;
+        
+        drawNoteShape(ctx, note.x, note.y, size, shape);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Draw bright flash if recently fired
+        if (isFlashing) {
+          ctx.save();
+          ctx.globalAlpha = 1 - (timeSinceFire / settings.noteFireFlashDuration); // Fade out
+          ctx.fillStyle = settings.noteFireFlashColor;
+          ctx.strokeStyle = settings.noteFireFlashColor;
+          ctx.lineWidth = settings.noteStrokeWidth * settings.noteFireFlashBrightness;
+          drawNoteShape(ctx, note.x, note.y, size * settings.noteFireFlashBrightness, shape);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        
+        // Draw outer outline for root notes
+        if (note.isStart) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = settings.noteStrokeWidth;
+          drawNoteShape(ctx, note.x, note.y, size + 3, shape);
+          ctx.stroke();
+        }
+        
+        // Highlight if this is the source of a link being created
+        if (interactionManager.link.fromNote === note) {
+          ctx.strokeStyle = '#6a6a6a';
+          ctx.lineWidth = settings.noteRootStrokeWidth;
+          ctx.stroke();
+          ctx.strokeStyle = color; // Restore
+          ctx.lineWidth = settings.noteStrokeWidth;
+        }
+        
+        ctx.restore(); // Restore canvas state after each note
+      }
+    }
+    
+    // Properties sidebar management
+    const propertiesContent = document.getElementById('properties-content');
+    
+    // Use existing colorPalette and noteNames from top of file
+    
+    function updatePropertiesSidebar() {
+      if (selectedNote) {
+        showNoteProperties(selectedNote);
+      } else if (selectedLink) {
+        showLinkProperties(selectedLink);
+      } else {
+        showDefaultProperties();
+      }
+    }
+    
+    function showNoteProperties(note) {
+      // Update template when selecting a note so new notes use these properties
+      updateNoteTemplate(note);
+      
+      // Get chord string from midiNotes array
+      const midiNotes = note.midiNotes || (note.midiNote ? [note.midiNote] : [60]);
+      const chordString = formatChordString(midiNotes);
+      
+      propertiesContent.innerHTML = `
+        <h3>Note Properties</h3>
+        
+        <!-- MIDI PROPERTIES -->
+        <div class="property-section">
+          <div class="property-label">Note(s)</div>
+          <input type="text" id="note-input" 
+                 style="width: 100%; padding: 6px; background: #2a2a2a; border: 1px solid #444; 
+                        border-radius: 3px; color: #ccc; font-family: monospace; font-size: 12px;"
+                 value="${chordString}"
+                 placeholder="C4 F#4 Bb4">
+          <div style="font-size: 10px; color: #666; margin-top: 4px;">
+            Enter note names (e.g. C4 F#4 Bb4 for chords)
+          </div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Pitch Randomisation</div>
+          <input type="range" class="property-slider" min="0" max="24" step="1" 
+                 value="${note.pitchRandomization || 0}" data-property="pitchRandomization">
+          <div class="property-value">± ${note.pitchRandomization || 0} semitones</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Velocity</div>
+          <input type="range" class="property-slider" min="0" max="127" step="1" 
+                 value="${note.velocity !== undefined ? note.velocity : 100}" data-property="velocity">
+          <div class="property-value">${note.velocity !== undefined ? note.velocity : 100}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Channel</div>
+          <input type="range" class="property-slider" min="0" max="15" step="1" 
+                 value="${note.channel || 0}" data-property="channel">
+          <div class="property-value">${note.channel || 0}</div>
+        </div>
+        
+        <!-- STYLE PROPERTIES -->
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <div class="property-label">Color</div>
+          <div class="color-grid" style="display: grid; grid-template-columns: repeat(8, ${settings.colorSwatchSize}px); gap: 4px; justify-content: center; margin-top: 8px;">
+            ${colorPalette.map((color, i) => `
+              <div class="color-swatch ${color === (note.color || settings.noteColor) ? 'selected' : ''}" 
+                   data-color="${color}"
+                   style="width: ${settings.colorSwatchSize}px; 
+                          height: ${settings.colorSwatchSize}px; 
+                          background: ${color}; 
+                          border: 2px solid ${color === (note.color || settings.noteColor) ? '#fff' : '#444'};
+                          border-radius: 3px;
+                          cursor: pointer;
+                          transition: all 0.1s;">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Lead In Note</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="range" class="property-slider" min="0" max="1" step="1" 
+                   value="${note.isStart ? 1 : 0}" data-property="isStart"
+                   style="width: 40px; flex-shrink: 0;">
+            <div class="property-value" style="min-width: 30px;">${note.isStart ? 'on' : 'off'}</div>
+          </div>
+        </div>
+        
+        <!-- ACTION BUTTONS -->
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <button class="property-button property-button-warning" data-action="clear-links">Delete Links</button>
+          <button class="property-button property-button-danger" data-action="delete-note">Delete Note</button>
+        </div>
+      `;
+      
+      attachNotePropertyHandlers(note);
+    }
+    
+    function showLinkProperties(linkData) {
+      const link = linkData.link;
+      
+      // Update template when selecting a link so new links use these properties
+      updateLinkTemplate(link);
+      
+      propertiesContent.innerHTML = `
+        <h3>Link Properties</h3>
+        
+        <div class="property-section">
+          <div class="property-label">Weight</div>
+          <input type="range" class="property-slider" min="1" max="10" step="1" 
+                 value="${link.weight !== undefined ? link.weight : 1}" data-property="weight">
+          <div class="property-value">${link.weight !== undefined ? link.weight : 1}</div>
+        </div>
+        
+        <div class="property-section" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 12px;">
+          <button class="property-button property-button-danger" data-action="delete-link">Delete Link</button>
+        </div>
+      `;
+      
+      attachLinkPropertyHandlers(linkData);
+    }
+    
+    function showDefaultProperties() {
+      propertiesContent.innerHTML = `
+        <h3>Sequencer</h3>
+        
+        <div class="property-section">
+          <div class="property-label">Name</div>
+          <input type="text" id="model-name" value="${modelName}" 
+                 style="width: 95%; padding: 6px; background: #2a2a2a; border: 1px solid #444; 
+                        border-radius: 3px; color: #ccc; font-family: monospace; font-size: 12px;">
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">BPM</div>
+          <input type="range" class="property-slider" id="bpm-slider" min="60" max="200" step="1" 
+                 value="${settings.bpm}">
+          <div class="property-value" id="bpm-value">${settings.bpm}</div>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Key Signature</div>
+          <select class="property-select" id="key-sig-select">
+            <option value="0" ${settings.keySignature === 0 ? 'selected' : ''}>C</option>
+            <option value="1" ${settings.keySignature === 1 ? 'selected' : ''}>C# / Db</option>
+            <option value="2" ${settings.keySignature === 2 ? 'selected' : ''}>D</option>
+            <option value="3" ${settings.keySignature === 3 ? 'selected' : ''}>D# / Eb</option>
+            <option value="4" ${settings.keySignature === 4 ? 'selected' : ''}>E</option>
+            <option value="5" ${settings.keySignature === 5 ? 'selected' : ''}>F</option>
+            <option value="6" ${settings.keySignature === 6 ? 'selected' : ''}>F# / Gb</option>
+            <option value="7" ${settings.keySignature === 7 ? 'selected' : ''}>G</option>
+            <option value="8" ${settings.keySignature === 8 ? 'selected' : ''}>G# / Ab</option>
+            <option value="9" ${settings.keySignature === 9 ? 'selected' : ''}>A</option>
+            <option value="10" ${settings.keySignature === 10 ? 'selected' : ''}>A# / Bb</option>
+            <option value="11" ${settings.keySignature === 11 ? 'selected' : ''}>B</option>
+          </select>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Scale / Quantisation</div>
+          <select class="property-select" id="scale-select">
+            <option value="chromatic" ${settings.scale === 'chromatic' ? 'selected' : ''}>Chromatic</option>
+            <option value="major" ${settings.scale === 'major' ? 'selected' : ''}>Major (Ionian)</option>
+            <option value="minor" ${settings.scale === 'minor' ? 'selected' : ''}>Natural Minor (Aeolian)</option>
+            <option value="harmonicMinor" ${settings.scale === 'harmonicMinor' ? 'selected' : ''}>Harmonic Minor</option>
+            <option value="melodicMinor" ${settings.scale === 'melodicMinor' ? 'selected' : ''}>Melodic Minor</option>
+            <option value="majorPentatonic" ${settings.scale === 'majorPentatonic' ? 'selected' : ''}>Major Pentatonic</option>
+            <option value="minorPentatonic" ${settings.scale === 'minorPentatonic' ? 'selected' : ''}>Minor Pentatonic</option>
+            <option value="dorian" ${settings.scale === 'dorian' ? 'selected' : ''}>Dorian</option>
+            <option value="phrygian" ${settings.scale === 'phrygian' ? 'selected' : ''}>Phrygian</option>
+            <option value="lydian" ${settings.scale === 'lydian' ? 'selected' : ''}>Lydian</option>
+            <option value="mixolydian" ${settings.scale === 'mixolydian' ? 'selected' : ''}>Mixolydian</option>
+            <option value="locrian" ${settings.scale === 'locrian' ? 'selected' : ''}>Locrian</option>
+            <option value="wholeTone" ${settings.scale === 'wholeTone' ? 'selected' : ''}>Whole Tone</option>
+            <option value="diminished" ${settings.scale === 'diminished' ? 'selected' : ''}>Diminished (Whole-Half)</option>
+            <option value="blues" ${settings.scale === 'blues' ? 'selected' : ''}>Blues</option>
+          </select>
+        </div>
+        
+        <div class="property-section">
+          <div class="property-label">Pitch Randomisation</div>
+          <input type="range" class="property-slider" id="global-pitch-rand-slider" min="0" max="24" step="1" 
+                 value="${settings.globalPitchRandomisation}">
+          <div class="property-value" id="global-pitch-rand-value">± ${settings.globalPitchRandomisation} semitones</div>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #333; color: #666; font-size: 11px; line-height: 1.5;">
+          <p style="margin: 0 0 8px 0; font-weight: bold; color: #888;">VERSION</p>
+          <p style="margin: 0 0 4px 0;">${settings.version}</p>
+        </div>
+      `;
+      
+      // Attach handlers
+      const nameInput = document.getElementById('model-name');
+      const bpmSlider = document.getElementById('bpm-slider');
+      const bpmValue = document.getElementById('bpm-value');
+      const keySigSelect = document.getElementById('key-sig-select');
+      const scaleSelect = document.getElementById('scale-select');
+      const globalPitchRandSlider = document.getElementById('global-pitch-rand-slider');
+      const globalPitchRandValue = document.getElementById('global-pitch-rand-value');
+      
+      nameInput.addEventListener('input', () => {
+        modelName = nameInput.value;
+      });
+      
+      bpmSlider.addEventListener('input', () => {
+        settings.bpm = parseInt(bpmSlider.value);
+        bpmValue.textContent = settings.bpm;
+      });
+      
+      keySigSelect.addEventListener('change', () => {
+        settings.keySignature = parseInt(keySigSelect.value);
+      });
+      
+      scaleSelect.addEventListener('change', () => {
+        settings.scale = scaleSelect.value;
+      });
+      
+      globalPitchRandSlider.addEventListener('input', () => {
+        settings.globalPitchRandomisation = parseInt(globalPitchRandSlider.value);
+        globalPitchRandValue.textContent = `± ${settings.globalPitchRandomisation} semitones`;
+      });
+    }
+    
+    function updateNoteTemplate(note) {
+      lastNoteTemplate = {
+        midiNotes: note.midiNotes ? [...note.midiNotes] : [60],
+        channel: note.channel,
+        velocity: note.velocity,
+        pitchRandomization: note.pitchRandomization,
+        flavor: note.flavor !== undefined ? note.flavor : 0,
+        color: note.color
+      };
+    }
+    
+    function updateLinkTemplate(link) {
+      lastLinkTemplate = {
+        weight: link.weight
+      };
+    }
+    
+    function attachNotePropertyHandlers(note) {
+      // Note input field
+      const noteInput = document.getElementById('note-input');
+      if (noteInput) {
+        const updateNotes = () => {
+          const chordString = noteInput.value;
+          note.midiNotes = parseChordString(chordString);
+          updateNoteTemplate(note);
+          render();
+        };
+        
+        // Update on Enter or Tab
+        noteInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            updateNotes();
+            noteInput.blur(); // Deselect
+          }
+        });
+        
+        // Update on blur (lose focus)
+        noteInput.addEventListener('blur', updateNotes);
+      }
+      
+      // Color swatches
+      propertiesContent.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.addEventListener('click', () => {
+          note.color = swatch.dataset.color;
+          
+          // Update swatch borders
+          propertiesContent.querySelectorAll('.color-swatch').forEach(s => {
+            s.style.border = `2px solid ${s.dataset.color === note.color ? '#fff' : '#444'}`;
+            if (s.dataset.color === note.color) {
+              s.classList.add('selected');
+            } else {
+              s.classList.remove('selected');
+            }
+          });
+          
+          updateNoteTemplate(note);
+          render();
+        });
+      });
+      
+      // Sliders
+      propertiesContent.querySelectorAll('.property-slider').forEach(slider => {
+        const updateValue = () => {
+          const prop = slider.dataset.property;
+          const value = parseFloat(slider.value);
+          
+          // Special handling for isStart toggle
+          if (prop === 'isStart') {
+            note[prop] = value === 1;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = value === 1 ? 'on' : 'off';
+          }
+          // Special handling for pitchRandomization
+          else if (prop === 'pitchRandomization') {
+            note[prop] = value;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = `± ${value} semitones`;
+          } else if (prop === 'monophonic') {
+            // Convert 0/1 to boolean
+            note[prop] = value === 1;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = value;
+          } else {
+            note[prop] = value;
+            const valueDisplay = slider.nextElementSibling;
+            valueDisplay.textContent = value;
+          }
+          
+          updateNoteTemplate(note);
+          render();
+        };
+        
+        slider.addEventListener('input', updateValue);
+      });
+      
+      // Select dropdowns
+      propertiesContent.querySelectorAll('.property-select').forEach(select => {
+        select.addEventListener('change', () => {
+          const prop = select.dataset.property;
+          note[prop] = parseFloat(select.value);
+          updateNoteTemplate(note);
+          render();
+        });
+      });
+      
+      // Checkboxes
+      propertiesContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const prop = checkbox.dataset.property;
+          note[prop] = checkbox.checked;
+          updateNoteTemplate(note);
+          render();
+        });
+      });
+      
+      // Action buttons
+      propertiesContent.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          if (action === 'delete-note') {
+            const key = posKey(note.x, note.y);
+            
+            // Remove all links pointing TO this note from other notes
+            for (const otherNote of notes.values()) {
+              otherNote.links = otherNote.links.filter(link => 
+                !(link.x === note.x && link.y === note.y)
+              );
+            }
+            
+            // Delete the note itself
+            notes.delete(key);
+            selectedNote = null;
+            updatePropertiesSidebar();
+            render();
+          } else if (action === 'clear-links') {
+            note.links = [];
+            render();
+          }
+        });
+      });
+    }
+    
+    function attachLinkPropertyHandlers(linkData) {
+      const link = linkData.link;
+      
+      // Sliders
+      propertiesContent.querySelectorAll('.property-slider').forEach(slider => {
+        const prop = slider.dataset.property;
+        
+        // Normal slider handling
+        const updateValue = () => {
+          const value = parseInt(slider.value);
+          link[prop] = value;
+          
+          const valueDisplay = slider.nextElementSibling;
+          valueDisplay.textContent = value;
+          updateLinkTemplate(link);
+          render();
+        };
+        
+        slider.addEventListener('input', updateValue);
+      });
+      
+      // Action buttons
+      propertiesContent.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          if (action === 'delete-link') {
+            linkData.sourceNote.links.splice(linkData.linkIndex, 1);
+            selectedLink = null;
+            updatePropertiesSidebar();
+            render();
+          }
+        });
+      });
+    }
+    
+    // Save/Load functionality
+    function saveSequence() {
+      const data = {
+        version: settings.version,
+        notes: Array.from(notes.entries()).map(([key, note]) => {
+          // Create a clean copy without runtime properties
+          const { lastFireTime, ...cleanNote } = note;
+          return {
+            key: key,
+            note: cleanNote
+          };
+        }),
+        metadata: {
+          name: modelName
+        },
+        settings: {
+          bpm: settings.bpm,
+          keySignature: settings.keySignature,
+          scale: settings.scale,
+          globalPitchRandomisation: settings.globalPitchRandomisation,
+          theme: settings.theme
+        },
+        camera: {
+          panX: panX,
+          panY: panY,
+          zoom: zoom
+        }
+      };
+      
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // Use modelName for filename, sanitize and add timestamp if empty
+      const safeName = modelName.trim() || 'Untitled';
+      const filename = safeName.replace(/[^a-z0-9_\-]/gi, '_').toLowerCase();
+      //a.download = `${filename}-${Date.now()}.json`;
+      a.download = `${filename}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      console.log('Sequence saved');
+    }
+    
+    // Shared function to load sequence data (used by file load and URL load)
+    function loadSequenceData(data) {
+      // Clear current state
+      notes.clear();
+      selectedNote = null;
+      selectedLink = null;
+      
+      // Restore notes
+      if (data.notes) {
+        for (const item of data.notes) {
+          const note = item.note;
+          
+          // Ensure midiNotes exists and is an array
+          if (!note.midiNotes) {
+            note.midiNotes = [60]; // Default to C4
+          }
+          
+          // Normalize note properties with defaults
+          if (!note.color) note.color = settings.noteColor;
+          if (note.flavor === undefined) note.flavor = 0; // Default to regular note
+          if (note.velocity === undefined) note.velocity = 64;
+          if (note.channel === undefined) note.channel = 0;
+          if (note.pitchRandomization === undefined) note.pitchRandomization = 0;
+          if (!note.links) note.links = [];
+          
+          // Remove old properties if present
+          delete note.shape;
+          delete note.size;
+          
+          // Normalize link properties with defaults
+          for (const link of note.links) {
+            if (link.weight === undefined) link.weight = 1;
+          }
+          
+          // Remove runtime-only properties that shouldn't be loaded
+          delete note.lastFireTime;
+          
+          notes.set(item.key, note);
+        }
+      }
+      
+      // Restore metadata
+      if (data.metadata) {
+        modelName = data.metadata.name || 'Untitled';
+      } else {
+        modelName = 'Untitled';
+      }
+      
+      // Restore settings
+      if (data.settings) {
+        if (data.settings.bpm) settings.bpm = data.settings.bpm;
+        if (data.settings.keySignature !== undefined) settings.keySignature = data.settings.keySignature;
+        if (data.settings.scale) settings.scale = data.settings.scale;
+        if (data.settings.globalPitchRandomisation !== undefined) settings.globalPitchRandomisation = data.settings.globalPitchRandomisation;
+        if (data.settings.theme) applyTheme(data.settings.theme);
+      }
+      
+      // Restore camera
+      if (data.camera) {
+        panX = data.camera.panX || 0;
+        panY = data.camera.panY || 0;
+        zoom = data.camera.zoom || 1;
+      }
+      
+      selectedNote = null;
+      selectedLink = null;
+      updatePropertiesSidebar();
+      render();
+    }
+    
+    function loadSequence() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            loadSequenceData(data);
+            console.log('Sequence loaded');
+          } catch (err) {
+            console.error('Failed to load sequence:', err);
+            alert('Failed to load sequence file');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+          
+    function drawSelectionBox() {
+      ctx.strokeStyle = settings.selectionBoxColor;
+      ctx.lineWidth = settings.selectionBoxLineWidth;
+      ctx.setLineDash(settings.selectionBoxDashPattern);
+      
+      // Draw bounding box during drag
+      if (interactionManager.selectionBox.active) {
+        const start = interactionManager.selectionBox.startWorld;
+        const end = interactionManager.selectionBox.endWorld;
+        
+        ctx.strokeStyle = '#4dabf7'; // Blue for selection box
+        ctx.strokeRect(
+          Math.min(start.x, end.x),
+          Math.min(start.y, end.y),
+          Math.abs(end.x - start.x),
+          Math.abs(end.y - start.y)
+        );
+      }
+      
+      // Draw highlights for multi-selected notes
+      if (selectedItems.notes.length > 0) {
+        ctx.strokeStyle = '#ffd43b'; // Yellow for multi-select
+        for (const note of selectedItems.notes) {
+          const flavor = note.flavor !== undefined ? note.flavor : 0;
+          const size = settings.noteSizes[flavor] || settings.noteSizes[0] || 10;
+          const boxSize = size * 2 + settings.selectionBoxPaddingNote;
+          
+          ctx.strokeRect(
+            note.x - boxSize / 2,
+            note.y - boxSize / 2,
+            boxSize,
+            boxSize
+          );
+        }
+      }
+      // Single selection (existing behavior)
+      else if (selectedNote) {
+        // Draw box around selected note
+        const flavor = selectedNote.flavor !== undefined ? selectedNote.flavor : 0;
+        const size = settings.noteSizes[flavor] || settings.noteSizes[0] || 10;
+        const boxSize = size * 2 + settings.selectionBoxPaddingNote;
+        const centerX = selectedNote.x;
+        const centerY = selectedNote.y;
+        
+        ctx.strokeRect(
+          centerX - boxSize / 2,
+          centerY - boxSize / 2,
+          boxSize,
+          boxSize
+        );
+        
+        // Draw X marker at center
+        const xSize = settings.selectionBoxXSize;
+        ctx.beginPath();
+        ctx.moveTo(centerX - xSize / 2, centerY - xSize / 2);
+        ctx.lineTo(centerX + xSize / 2, centerY + xSize / 2);
+        ctx.moveTo(centerX + xSize / 2, centerY - xSize / 2);
+        ctx.lineTo(centerX - xSize / 2, centerY + xSize / 2);
+        ctx.stroke();
+        
+      } else if (selectedLink) {
+        // Draw box around selected link center
+        const sourceNote = selectedLink.sourceNote;
+        const link = selectedLink.link;
+        const targetKey = posKey(link.x, link.y);
+        const targetNote = notes.get(targetKey);
+        
+        if (targetNote) {
+          // Calculate actual drawn link position (with bidirectional offset)
+          const hasReverseLink = targetNote.links.some(l => 
+            l.x === sourceNote.x && l.y === sourceNote.y
+          );
+          
+          let startX = sourceNote.x;
+          let startY = sourceNote.y;
+          let endX = targetNote.x;
+          let endY = targetNote.y;
+          
+          if (hasReverseLink) {
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            
+            const perpX = -dy / len * settings.bidirectionalLinkOffset;
+            const perpY = dx / len * settings.bidirectionalLinkOffset;
+            
+            startX += perpX;
+            startY += perpY;
+            endX += perpX;
+            endY += perpY;
+          }
+          
+          // Calculate link length and center
+          const dx = endX - startX;
+          const dy = endY - startY;
+          const linkLength = Math.sqrt(dx * dx + dy * dy);
+          const centerX = (startX + endX) / 2;
+          const centerY = (startY + endY) / 2;
+          
+          // Box size is proportional to link length
+          const boxSize = linkLength * settings.linkSelectionBoxScale;
+          
+          ctx.strokeRect(
+            centerX - boxSize / 2,
+            centerY - boxSize / 2,
+            boxSize,
+            boxSize
+          );
+          
+          // Draw X marker at center
+          const xSize = settings.selectionBoxXSize;
+          ctx.beginPath();
+          ctx.moveTo(centerX - xSize / 2, centerY - xSize / 2);
+          ctx.lineTo(centerX + xSize / 2, centerY + xSize / 2);
+          ctx.moveTo(centerX + xSize / 2, centerY - xSize / 2);
+          ctx.lineTo(centerX - xSize / 2, centerY + xSize / 2);
+          ctx.stroke();
+        }
+      }
+      
+      ctx.setLineDash([]); // Reset to solid
+    }
+    
+    
+    function render() {
+      // Clear
+      ctx.fillStyle = settings.backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Apply camera transform
+      ctx.save();
+      ctx.translate(panX, panY);
+      ctx.scale(zoom, zoom);
+      
+      drawGrid();
+      drawNotes();
+      drawSelectionBox(); // Draw selection indicator on top
+      
+      ctx.restore();
+    }
+    
+    // Animation loop
+    function updateLoop(timestamp) {
+      if (isPlaying) {
+        const deltaTime = lastFrameTime ? timestamp - lastFrameTime : 0;
+        lastFrameTime = timestamp;
+        
+        // TODO: Update performers here when implemented
+        
+        render();
+      }
+      
+      requestAnimationFrame(updateLoop);
+    }
+    
+    // Mouse wheel for zoom
+    // Wheel zoom disabled - use Alt+left drag instead
+    /*
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      
+      // Get mouse world position
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      // Zoom towards mouse position
+      const worldBefore = screenToWorld(mouseX, mouseY);
+      
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      zoom *= zoomFactor;
+      
+      // Clamp zoom
+      zoom = Math.max(0.1, Math.min(zoom, 5));
+      
+      const worldAfter = screenToWorld(mouseX, mouseY);
+      
+      // Adjust pan to keep mouse over same world point
+      panX += (worldAfter.x - worldBefore.x) * zoom;
+      panY += (worldAfter.y - worldBefore.y) * zoom;
+      
+      render();
+    });
+    */
+    
+    canvas.addEventListener('mousedown', (e) => {
+      const world = getWorldPosition(e);
+      
+      // Alt+drag always overrides for zoom (regardless of mode)
+      if (e.button === 0 && e.altKey) {
+        e.preventDefault();
+        interactionManager.zoom.active = true;
+        interactionManager.zoom.startX = e.clientX;
+        interactionManager.zoom.startY = e.clientY;
+        interactionManager.zoom.startValue = zoom;
+        canvas.style.cursor = 'zoom-in';
+        return;
+      }
+      
+      // Shift+drag always overrides for pan (regardless of mode)
+      if (e.button === 0 && e.shiftKey) {
+        e.preventDefault();
+        interactionManager.pan.active = true;
+        interactionManager.pan.lastX = e.clientX;
+        interactionManager.pan.lastY = e.clientY;
+        canvas.style.cursor = 'move';
+        return;
+      }
+      
+      // Mode-specific left-click behavior
+      if (e.button === 0) {
+        e.preventDefault();
+        
+        if (interactionManager.mode === 'select') {
+          // SELECT MODE: click to select, drag to move
+          
+          // Check for link first (higher priority)
+          const linkData = findLinkAt(world.x, world.y);
+          if (linkData) {
+            selectedLink = linkData;
+            selectedNote = null;
+            updatePropertiesSidebar();
+            render();
+            return;
+          }
+          
+          // Check for note
+          const note = findNoteAt(world.x, world.y);
+          if (note) {
+            // Check if clicking on a multi-selected note
+            if (selectedItems.notes.includes(note)) {
+              // Start dragging ALL selected notes
+              interactionManager.drag.active = true;
+              interactionManager.drag.note = note; // Anchor note
+              interactionManager.drag.startWorld = { x: world.x, y: world.y };
+              interactionManager.drag.noteOriginalPos = { x: note.x, y: note.y };
+              
+              // Store original positions of ALL selected notes
+              interactionManager.drag.multiSelectOriginalPos = selectedItems.notes.map(n => ({
+                note: n,
+                x: n.x,
+                y: n.y
+              }));
+              
+              canvas.style.cursor = 'grabbing';
+              return;
+            }
+            
+            // Click on unselected note - single select and drag
+            selectedNote = note;
+            selectedLink = null;
+            selectedItems.notes = [];
+            selectedItems.links = [];
+            sortNoteLinks(note);
+            updatePropertiesSidebar();
+            
+            // Start dragging
+            interactionManager.drag.active = true;
+            interactionManager.drag.note = note;
+            interactionManager.drag.startWorld = { x: world.x, y: world.y };
+            interactionManager.drag.noteOriginalPos = { x: note.x, y: note.y };
+            interactionManager.drag.multiSelectOriginalPos = null;
+            canvas.style.cursor = 'grabbing';
+            return;
+          }
+          
+          // Click on empty space - start selection box or deselect
+          selectedNote = null;
+          selectedLink = null;
+          selectedItems.notes = [];
+          selectedItems.links = [];
+          
+          // Start selection box drag
+          interactionManager.selectionBox.active = true;
+          interactionManager.selectionBox.startWorld = { x: world.x, y: world.y };
+          interactionManager.selectionBox.endWorld = { x: world.x, y: world.y };
+          
+          updatePropertiesSidebar();
+          render();
+        }
+        else if (interactionManager.mode === 'add-note') {
+          // ADD-NOTE MODE: click to create note, or click existing to select it
+          
+          // Check if clicking on existing note
+          const existingNote = findNoteAt(world.x, world.y);
+          if (existingNote) {
+            // Switch to select mode and select the note
+            interactionManager.setMode('select');
+            selectedNote = existingNote;
+            selectedLink = null;
+            selectedItems.notes = [];
+            selectedItems.links = [];
+            sortNoteLinks(existingNote);
+            updatePropertiesSidebar();
+            render();
+            return;
+          }
+          
+          // Click on empty space - create new note
+          const snapped = snapToGrid(world.x, world.y);
+          const key = posKey(snapped.x, snapped.y);
+          
+          if (!notes.has(key)) {
+            const note = createNote(snapped.x, snapped.y);
+            
+            // Auto-set as start note if this is the first note
+            if (notes.size === 0) {
+              note.isStart = true;
+            }
+            
+            // Add note to map!
+            notes.set(key, note);
+            
+            // Select the new note
+            selectedNote = note;
+            selectedLink = null;
+            updatePropertiesSidebar();
+            render();
+          }
+        }
+        else if (interactionManager.mode === 'add-link') {
+          // ADD-LINK MODE: click note to start, click another to complete, or click existing link to select it
+          
+          // Check if clicking on existing link first
+          const linkData = findLinkAt(world.x, world.y);
+          if (linkData && !interactionManager.link.fromNote) {
+            // Switch to select mode and select the link
+            interactionManager.setMode('select');
+            selectedLink = linkData;
+            selectedNote = null;
+            selectedItems.notes = [];
+            selectedItems.links = [];
+            updatePropertiesSidebar();
+            render();
+            return;
+          }
+          
+          const note = findNoteAt(world.x, world.y);
+          
+          if (note) {
+            if (!interactionManager.link.fromNote) {
+              // Start link from this note - store position but don't set active yet
+              interactionManager.link.fromNote = note;
+              interactionManager.link.mousePos = world;
+              interactionManager.link.dragStartPos = { x: e.clientX, y: e.clientY };
+              render();
+            }
+            else {
+              // Complete link to this note
+              const fromNote = interactionManager.link.fromNote;
+              
+              // Clicking the same note cancels link creation
+              if (note === fromNote) {
+                interactionManager.link.active = false;
+                interactionManager.link.fromNote = null;
+                interactionManager.link.mousePos = null;
+                interactionManager.link.dragStartPos = null;
+                render();
+              }
+              // Can't link to itself
+              else {
+                // Check if link already exists
+                const linkExists = fromNote.links.some(link => 
+                  link.x === note.x && link.y === note.y
+                );
+                
+                if (!linkExists) {
+                  // Create the link
+                  fromNote.links.push({
+                    x: note.x,
+                    y: note.y,
+                    weight: lastLinkTemplate.weight
+                  });
+                  
+                  sortNoteLinks(fromNote);
+                }
+                
+                // Reset link state after successful link creation
+                interactionManager.link.active = false;
+                interactionManager.link.fromNote = null;
+                interactionManager.link.mousePos = null;
+                interactionManager.link.dragStartPos = null;
+                render();
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // Canvas mousemove for link preview in add-link mode
+    canvas.addEventListener('mousemove', (e) => {
+      if (interactionManager.mode === 'add-link' && interactionManager.link.fromNote) {
+        // Detect if we're dragging (mouse moved significantly from start)
+        if (interactionManager.link.dragStartPos) {
+          const dx = e.clientX - interactionManager.link.dragStartPos.x;
+          const dy = e.clientY - interactionManager.link.dragStartPos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // If moved more than 5 pixels, consider it a drag
+          if (distance > 5) {
+            interactionManager.link.active = true; // Now we're dragging
+          }
+        }
+        
+        const world = getWorldPosition(e);
+        interactionManager.link.mousePos = world;
+        render();
+      }
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+      if (interactionManager.pan.active) {
+        const dx = e.clientX - interactionManager.pan.lastX;
+        const dy = e.clientY - interactionManager.pan.lastY;
+        
+        panX += dx;
+        panY += dy;
+        
+        interactionManager.pan.lastX = e.clientX;
+        interactionManager.pan.lastY = e.clientY;
+        
+        render();
+      }
+      else if (interactionManager.zoom.active) {
+        const deltaY = interactionManager.zoom.startY - e.clientY;
+        const zoomDelta = deltaY * 0.005;
+        
+        let newZoom = interactionManager.zoom.startValue + zoomDelta;
+        newZoom = Math.max(0.1, Math.min(5, newZoom));
+        
+        // Zoom towards original mouse position
+        const worldBefore = clientToWorld(interactionManager.zoom.startX, interactionManager.zoom.startY);
+        zoom = newZoom;
+        const worldAfter = clientToWorld(interactionManager.zoom.startX, interactionManager.zoom.startY);
+        
+        panX += (worldAfter.x - worldBefore.x) * zoom;
+        panY += (worldAfter.y - worldBefore.y) * zoom;
+        
+        render();
+      }
+      else if (interactionManager.selectionBox.active) {
+        const world = getWorldPosition(e);
+        interactionManager.selectionBox.endWorld = { x: world.x, y: world.y };
+        render();
+      }
+      else if (interactionManager.drag.active && interactionManager.drag.note) {
+        const world = getWorldPosition(e);
+        
+        const dx = world.x - interactionManager.drag.startWorld.x;
+        const dy = world.y - interactionManager.drag.startWorld.y;
+        
+        // If dragging multi-selection, move all notes
+        if (interactionManager.drag.multiSelectOriginalPos) {
+          for (const item of interactionManager.drag.multiSelectOriginalPos) {
+            item.note.x = item.x + dx;
+            item.note.y = item.y + dy;
+          }
+        } else {
+          // Single note drag
+          interactionManager.drag.note.x = interactionManager.drag.noteOriginalPos.x + dx;
+          interactionManager.drag.note.y = interactionManager.drag.noteOriginalPos.y + dy;
+        }
+        
+        render();
+      }
+    });
+    
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 0) {
+        // Check for link completion in add-link mode (only if dragging)
+        if (interactionManager.mode === 'add-link' && interactionManager.link.active) {
+          const world = getWorldPosition(e);
+          const targetNote = findNoteAt(world.x, world.y);
+          
+          if (targetNote) {
+            const fromNote = interactionManager.link.fromNote;
+            
+            // Releasing on the same note cancels link creation
+            if (targetNote === fromNote) {
+              interactionManager.link.active = false;
+              interactionManager.link.fromNote = null;
+              interactionManager.link.mousePos = null;
+              interactionManager.link.dragStartPos = null;
+              render();
+            }
+            else {
+              // Check if link already exists
+              const linkExists = fromNote.links.some(link => 
+                link.x === targetNote.x && link.y === targetNote.y
+              );
+              
+              if (!linkExists) {
+                // Create the link
+                fromNote.links.push({
+                  x: targetNote.x,
+                  y: targetNote.y,
+                  weight: lastLinkTemplate.weight
+                });
+                
+                sortNoteLinks(fromNote);
+              }
+              
+              // Reset link state after successful link creation
+              interactionManager.link.active = false;
+              interactionManager.link.fromNote = null;
+              interactionManager.link.mousePos = null;
+              interactionManager.link.dragStartPos = null;
+              render();
+            }
+          }
+          else {
+            // Released on empty space - cancel
+            interactionManager.link.active = false;
+            interactionManager.link.fromNote = null;
+            interactionManager.link.mousePos = null;
+            interactionManager.link.dragStartPos = null;
+            render();
+          }
+        }
+        else if (interactionManager.mode === 'add-link' && interactionManager.link.fromNote) {
+          // Click-click mode: mouseup on source note without dragging - just clear dragStartPos
+          interactionManager.link.dragStartPos = null;
+        }
+        
+        // Reset all other interaction states
+        if (interactionManager.pan.active) {
+          interactionManager.pan.active = false;
+          interactionManager.updateCursor();
+        }
+        else if (interactionManager.zoom.active) {
+          interactionManager.zoom.active = false;
+          interactionManager.updateCursor();
+        }
+        else if (interactionManager.selectionBox.active) {
+          // Finalize selection box
+          const box = interactionManager.selectionBox;
+          const minX = Math.min(box.startWorld.x, box.endWorld.x);
+          const maxX = Math.max(box.startWorld.x, box.endWorld.x);
+          const minY = Math.min(box.startWorld.y, box.endWorld.y);
+          const maxY = Math.max(box.startWorld.y, box.endWorld.y);
+          
+          // Select all notes inside box
+          selectedItems.notes = [];
+          for (const note of notes.values()) {
+            if (note.x >= minX && note.x <= maxX && note.y >= minY && note.y <= maxY) {
+              selectedItems.notes.push(note);
+            }
+          }
+          
+          // Select links where BOTH endpoints are selected
+          selectedItems.links = [];
+          for (const fromNote of selectedItems.notes) {
+            for (const link of fromNote.links) {
+              const toNote = notes.get(posKey(link.x, link.y));
+              if (toNote && selectedItems.notes.includes(toNote)) {
+                selectedItems.links.push({ fromNote, link });
+              }
+            }
+          }
+          
+          interactionManager.selectionBox.active = false;
+          interactionManager.selectionBox.startWorld = null;
+          interactionManager.selectionBox.endWorld = null;
+          render();
+        }
+        else if (interactionManager.drag.active) {
+          // Snap dragged note(s) to grid
+          
+          if (interactionManager.drag.multiSelectOriginalPos) {
+            // Multi-select drag - use two-phase update to prevent collisions
+            
+            // Phase 1: Delete all old keys and snap positions
+            const updates = [];
+            for (const item of interactionManager.drag.multiSelectOriginalPos) {
+              const note = item.note;
+              const oldKey = posKey(item.x, item.y);
+              const snapped = snapToGrid(note.x, note.y);
+              const newKey = posKey(snapped.x, snapped.y);
+              
+              updates.push({ note, oldKey, newKey, snapped, oldPos: { x: item.x, y: item.y } });
+              
+              // Delete old key immediately
+              if (oldKey !== newKey) {
+                notes.delete(oldKey);
+              }
+            }
+            
+            // Phase 2: Update positions and add new keys
+            for (const update of updates) {
+              update.note.x = update.snapped.x;
+              update.note.y = update.snapped.y;
+              
+              // Check if destination is occupied by a non-moving note
+              if (update.oldKey !== update.newKey) {
+                if (notes.has(update.newKey)) {
+                  // Collision! Revert this note to original position
+                  update.note.x = update.oldPos.x;
+                  update.note.y = update.oldPos.y;
+                  notes.set(posKey(update.oldPos.x, update.oldPos.y), update.note);
+                } else {
+                  notes.set(update.newKey, update.note);
+                }
+              }
+            }
+            
+            // Phase 3: Update all incoming links
+            for (const update of updates) {
+              for (const otherNote of notes.values()) {
+                for (const link of otherNote.links) {
+                  if (link.x === update.oldPos.x && link.y === update.oldPos.y) {
+                    link.x = update.note.x;
+                    link.y = update.note.y;
+                  }
+                }
+              }
+            }
+          } else {
+            // Single note drag
+            const oldKey = posKey(interactionManager.drag.noteOriginalPos.x, interactionManager.drag.noteOriginalPos.y);
+            const note = interactionManager.drag.note;
+            
+            const snapped = snapToGrid(note.x, note.y);
+            const newKey = posKey(snapped.x, snapped.y);
+            
+            // Update all links that point to this note's old position
+            for (const otherNote of notes.values()) {
+              for (const link of otherNote.links) {
+                if (link.x === interactionManager.drag.noteOriginalPos.x && 
+                    link.y === interactionManager.drag.noteOriginalPos.y) {
+                  link.x = snapped.x;
+                  link.y = snapped.y;
+                }
+              }
+            }
+            
+            // Only update map if position changed
+            if (oldKey !== newKey) {
+              notes.delete(oldKey);
+              note.x = snapped.x;
+              note.y = snapped.y;
+              notes.set(newKey, note);
+            }
+            else {
+              note.x = snapped.x;
+              note.y = snapped.y;
+            }
+          }
+          
+          interactionManager.drag.active = false;
+          interactionManager.drag.note = null;
+          interactionManager.drag.multiSelectOriginalPos = null;
+          interactionManager.updateCursor();
+          render();
+        }
+      }
+    });
+    
+    // Settings button handler
+    document.getElementById('show-settings-btn').addEventListener('click', () => {
+      selectedNote = null;
+      selectedLink = null;
+      selectedItems.notes = [];
+      selectedItems.links = [];
+      updatePropertiesSidebar();
+      render();
+    });
+    
+    // Mode button handlers
+    document.getElementById('mode-select').addEventListener('click', () => {
+      interactionManager.setMode('select');
+    });
+    
+    document.getElementById('mode-add-note').addEventListener('click', () => {
+      interactionManager.setMode('add-note');
+    });
+    
+    document.getElementById('mode-add-link').addEventListener('click', () => {
+      interactionManager.setMode('add-link');
+    });
+    
+    // Keyboard shortcuts for modes
+    document.addEventListener('keydown', (e) => {
+      // Don't trigger if typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        return;
+      }
+      
+      // ESC to cancel link creation
+      if (e.key === 'Escape') {
+        if (interactionManager.link.fromNote) {
+          interactionManager.link.active = false;
+          interactionManager.link.fromNote = null;
+          interactionManager.link.mousePos = null;
+          interactionManager.link.dragStartPos = null;
+          render();
+        }
+      }
+      // Mode shortcuts
+      else if (e.key === '1') {
+        interactionManager.setMode('select');
+      }
+      else if (e.key === '2') {
+        interactionManager.setMode('add-note');
+      }
+      else if (e.key === '3') {
+        interactionManager.setMode('add-link');
+      }
+    });
+    
+    // Transport controls
+    resizeCanvas();
+    
+    // Initialize interaction manager (sets default mode, cursor, and button states)
+    interactionManager.setMode('select');
+    
+    // Start main update loop
+    updateLoop(0);
+    
+    // Initialize MIDI connection at startup
+    midi.init();
+    
+    // Resize canvas on window resize
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Click status light to re-connect to MIDI
+    document.getElementById('status-light').addEventListener('click', () => {
+      if (!midi.connected) {
+        midi.init();
+      }
+    });
+    
+    
+    // Transport controls
+    const playBtn = document.getElementById('play-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      // Check if there are any links in the graph
+      const totalLinks = Array.from(notes.values()).reduce((sum, note) => sum + note.links.length, 0);
+      if (totalLinks === 0) {
+        alert('Cannot start: graph has no links!\nAdd links between notes to create sequences.');
+        return;
+      }
+      
+      isPlaying = true;
+      isPaused = false;
+      playBtn.disabled = true;
+      pauseBtn.disabled = false;
+      stopBtn.disabled = false;
+      playBtn.classList.remove('active');
+      lastFrameTime = 0;
+      playStartTime = performance.now(); // Record play start time
+      
+      // TODO: Trigger playback with new simple model
+      console.log('Play clicked - engine gutted, nothing happens yet');
+    });
+    
+    pauseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isPaused = !isPaused;
+      pauseBtn.classList.toggle('active', isPaused);
+      if (!isPaused) {
+        lastFrameTime = 0; // Reset timing when resuming
+      }
+    });
+    
+    stopBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isPlaying = false;
+      isPaused = false;
+      playBtn.disabled = false;
+      pauseBtn.disabled = true;
+      stopBtn.disabled = true;
+      pauseBtn.classList.remove('active');
+      
+      render();
+    });
+    
+    // Menu bar dropdown logic
+    const menuFile = document.getElementById('menu-file');
+    const fileDropdown = document.getElementById('file-dropdown');
+    const menuSave = document.getElementById('menu-save');
+    const menuLoad = document.getElementById('menu-load');
+    
+    const menuEdit = document.getElementById('menu-edit');
+    const editDropdown = document.getElementById('edit-dropdown');
+    const menuCopy = document.getElementById('menu-copy');
+    const menuPaste = document.getElementById('menu-paste');
+    
+    const menuView = document.getElementById('menu-view');
+    const viewDropdown = document.getElementById('view-dropdown');
+    const menuSettings = document.getElementById('menu-settings');
+    
+    // Function to update Edit menu item states
+    function updateEditMenuState() {
+      // Copy enabled if there's a selection
+      const canCopy = selectedNote !== null || selectedItems.notes.length > 0;
+      if (canCopy) {
+        menuCopy.classList.remove('disabled');
+      } else {
+        menuCopy.classList.add('disabled');
+      }
+      
+      // Paste enabled if clipboard has content
+      const canPaste = clipboard.notes.length > 0;
+      if (canPaste) {
+        menuPaste.classList.remove('disabled');
+      } else {
+        menuPaste.classList.add('disabled');
+      }
+    }
+    
+    // Toggle File dropdown on click
+    menuFile.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editDropdown.classList.remove('active');
+      viewDropdown.classList.remove('active');
+      fileDropdown.classList.toggle('active');
+    });
+    
+    // Toggle Edit dropdown on click
+    menuEdit.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileDropdown.classList.remove('active');
+      viewDropdown.classList.remove('active');
+      updateEditMenuState();
+      editDropdown.classList.toggle('active');
+    });
+    
+    // Toggle View dropdown on click
+    menuView.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileDropdown.classList.remove('active');
+      editDropdown.classList.remove('active');
+      viewDropdown.classList.toggle('active');
+    });
+    
+    // Close dropdowns when clicking elsewhere
+    document.addEventListener('click', () => {
+      fileDropdown.classList.remove('active');
+      editDropdown.classList.remove('active');
+      viewDropdown.classList.remove('active');
+    });
+    
+    // File menu actions
+    menuSave.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileDropdown.classList.remove('active');
+      saveSequence();
+    });
+    
+    menuLoad.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileDropdown.classList.remove('active');
+      loadSequence();
+    });
+    
+    // Edit menu actions
+    menuCopy.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!menuCopy.classList.contains('disabled')) {
+        copySelection();
+        editDropdown.classList.remove('active');
+      }
+    });
+    
+    menuPaste.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!menuPaste.classList.contains('disabled')) {
+        pasteClipboard();
+        editDropdown.classList.remove('active');
+      }
+    });
+    
+    // View menu actions
+    menuSettings.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedNote = null;
+      selectedLink = null;
+      selectedItems.notes = [];
+      selectedItems.links = [];
+      updatePropertiesSidebar();
+      render();
+      viewDropdown.classList.remove('active');
+    });
+    
+    // Keyboard navigation: Arrow keys to cycle through notes OR links (depending on current selection)
+    window.addEventListener('keydown', (e) => {
+      // Don't handle keyboard shortcuts if typing in text fields
+      const activeElement = document.activeElement;
+      const isTyping = activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA'
+      );
+      
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        // Allow arrow keys in text fields
+        if (isTyping) return;
+        
+        e.preventDefault();
+        
+        // Determine which type to cycle through based on current selection
+        const cycleNotes = selectedNote !== null || selectedLink === null;
+        
+        // Build list of selectable items of the same type
+        const selectables = [];
+        
+        if (cycleNotes) {
+          // Cycle through notes only
+          for (const note of notes.values()) {
+            selectables.push({ type: 'note', data: note });
+          }
+        } else {
+          // Cycle through links only
+          for (const note of notes.values()) {
+            for (let i = 0; i < note.links.length; i++) {
+              selectables.push({ 
+                type: 'link', 
+                data: { sourceNote: note, link: note.links[i], linkIndex: i }
+              });
+            }
+          }
+        }
+        
+        if (selectables.length === 0) return;
+        
+        // Find current selection index
+        let currentIndex = -1;
+        if (selectedNote) {
+          currentIndex = selectables.findIndex(s => s.type === 'note' && s.data === selectedNote);
+        } else if (selectedLink) {
+          currentIndex = selectables.findIndex(s => 
+            s.type === 'link' && 
+            s.data.sourceNote === selectedLink.sourceNote && 
+            s.data.linkIndex === selectedLink.linkIndex
+          );
+        }
+        
+        // Calculate next index
+        let nextIndex;
+        if (e.key === 'ArrowLeft') {
+          // ArrowLeft: go backward
+          nextIndex = currentIndex <= 0 ? selectables.length - 1 : currentIndex - 1;
+        } else {
+          // ArrowRight: go forward
+          nextIndex = currentIndex >= selectables.length - 1 ? 0 : currentIndex + 1;
+        }
+        
+        // Select next item
+        const next = selectables[nextIndex];
+        if (next.type === 'note') {
+          selectedNote = next.data;
+          selectedLink = null;
+          sortNoteLinks(selectedNote); // Sort links for predictable arrow key navigation
+        } else {
+          selectedLink = next.data;
+          selectedNote = null;
+        }
+        
+        updatePropertiesSidebar();
+        render();
+      }
+      
+      // Tab key: toggle between note and its links
+      if (e.key === 'Tab') {
+        // Allow Tab in text fields for navigation
+        if (isTyping) return;
+        
+        e.preventDefault();
+        
+        if (selectedNote) {
+          // Switch from note to first link from that note
+          if (selectedNote.links.length > 0) {
+            selectedLink = {
+              sourceNote: selectedNote,
+              link: selectedNote.links[0],
+              linkIndex: 0
+            };
+            selectedNote = null;
+            updatePropertiesSidebar();
+            render();
+          }
+        } else if (selectedLink) {
+          // Switch from link to its source note
+          selectedNote = selectedLink.sourceNote;
+          selectedLink = null;
+          sortNoteLinks(selectedNote); // Sort links for predictable arrow key navigation
+          updatePropertiesSidebar();
+          render();
+        }
+      }
+      
+      // Escape key: deselect and show default properties
+      if (e.key === 'Escape') {
+        // Allow Escape in text fields (though it doesn't do anything by default)
+        if (isTyping) return;
+        
+        selectedNote = null;
+        selectedLink = null;
+        updatePropertiesSidebar();
+        render();
+      }
+      
+      // Delete key: delete selected note, link, or multi-selection
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Allow Delete/Backspace in text fields for editing
+        if (isTyping) return;
+        
+        if (selectedItems.notes.length > 0) {
+          // Delete multi-selected notes and links
+          for (const note of selectedItems.notes) {
+            const key = posKey(note.x, note.y);
+            
+            // Remove all links pointing TO this note from other notes
+            for (const otherNote of notes.values()) {
+              otherNote.links = otherNote.links.filter(link => 
+                !(link.x === note.x && link.y === note.y)
+              );
+            }
+            
+            // Delete the note itself
+            notes.delete(key);
+          }
+          
+          selectedItems.notes = [];
+          selectedItems.links = [];
+          updatePropertiesSidebar();
+          render();
+        }
+        else if (selectedNote) {
+          // Delete selected note
+          const key = posKey(selectedNote.x, selectedNote.y);
+          
+          // Remove all links pointing TO this note from other notes
+          for (const otherNote of notes.values()) {
+            otherNote.links = otherNote.links.filter(link => 
+              !(link.x === selectedNote.x && link.y === selectedNote.y)
+            );
+          }
+          
+          // Delete the note itself
+          notes.delete(key);
+          selectedNote = null;
+          updatePropertiesSidebar();
+          render();
+        } else if (selectedLink) {
+          // Delete selected link
+          selectedLink.sourceNote.links.splice(selectedLink.linkIndex, 1);
+          selectedLink = null;
+          updatePropertiesSidebar();
+          render();
+        }
+      }
+      
+      // Ctrl+C: Copy multi-selection or single note
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        // Allow Ctrl+C in text fields for normal copy
+        if (isTyping) return;
+        
+        if (copySelection()) {
+          e.preventDefault();
+        }
+      }
+      
+      // Ctrl+V: Paste clipboard
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        // Allow Ctrl+V in text fields for normal paste
+        if (isTyping) return;
+        
+        if (pasteClipboard()) {
+          e.preventDefault();
+        }
+      }
+    });
+    
+    // Prevent transport button events from reaching canvas
+    [playBtn, pauseBtn, stopBtn].forEach(btn => {
+      btn.addEventListener('mousedown', (e) => e.stopPropagation());
+      btn.addEventListener('mouseup', (e) => e.stopPropagation());
+    });
+         
+    // Initialize properties sidebar with helpful hints
+    updatePropertiesSidebar();
+    render();
+    
+    // Check for ?load=<url> parameter to auto-load a sequence
+    const urlParams = new URLSearchParams(window.location.search);
+    const loadUrl = urlParams.get('load');
+    if (loadUrl) {
+      console.log('Loading sequence from URL:', loadUrl);
+      fetch(loadUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          loadSequenceData(data);
+          console.log('Sequence loaded from URL');
+        })
+        .catch(err => {
+          console.error('Failed to load sequence from URL:', err);
+          alert(`Failed to load sequence from URL:\n${loadUrl}\n\nError: ${err.message}`);
+        });
+    }
+  </script>
+</body>
+</html>
