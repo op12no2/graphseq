@@ -2,6 +2,15 @@
 
 WIP. Just a UI at the moment.
 
+https://op12no2.github.io/graphseq/sequencer.html  
+
+### MIDI
+
+On page load the sequencer will try and connect to loopMIDI on Windows and IAC on macOS; both of which can then be connected to your DAW.
+
+### Examples
+
+[Binary waterfall - blue channel 0, yellow channel 1](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/waterfall.json)
 
 
 ### Acknowledgements
