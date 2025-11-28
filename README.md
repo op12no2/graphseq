@@ -1,6 +1,6 @@
 # MIDI graph sequencer
 
-Refactoring/simlifying... got a bit out of hand :)
+Refactoring/simplifying... got a bit out of hand :)
 
 ### Keyboard assignments (PC-speak)
 
