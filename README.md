@@ -18,8 +18,7 @@ Binary Waterfall [run](https://op12no2.github.io/graphseq/sequencer.html?load=ht
 
 ### References
 
-- https://getbootstrap.com/
 - https://www.w3.org/TR/webmidi/
 - https://www.w3.org/TR/webaudio-1.1/
 - https://developer.mozilla.org/en-US/docs/Web/API
-- 
+ 
