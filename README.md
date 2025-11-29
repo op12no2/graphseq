@@ -1,6 +1,6 @@
 # MIDI graph sequencer
 
-WIP. Warning! - this alpha version only sends note on.
+WIP. Warning! - this very-alpha version only sends note on.
 
 https://op12no2.github.io/graphseq/sequencer.html  
 
@@ -16,3 +16,10 @@ Binary Waterfall [run](https://op12no2.github.io/graphseq/sequencer.html?load=ht
 
 - https://midinous.com/ 
 
+### References
+
+- https://getbootstrap.com/
+- https://www.w3.org/TR/webmidi/
+- https://www.w3.org/TR/webaudio-1.1/
+- https://developer.mozilla.org/en-US/docs/Web/API
+- 
