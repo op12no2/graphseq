@@ -12,10 +12,6 @@ On page load the sequencer will try and connect to loopMIDI on Windows and IAC o
 
 Binary Waterfall [run](https://op12no2.github.io/graphseq/sequencer.html?load=https://raw.githubusercontent.com/op12no2/graphseq/refs/heads/main/waterfall.json) | [video](https://www.youtube.com/watch?v=cY8j3bs4pKk)
 
-### Acknowledgements
-
-- https://midinous.com/ 
-
 ### References
 
 - https://www.w3.org/TR/webmidi/
