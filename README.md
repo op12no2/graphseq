@@ -16,4 +16,4 @@ Binary Waterfall [run](https://op12no2.github.io/graphseq/sequencer.html?load=ht
 
 - https://midinous.com/ - inspiration
 - https://www.youtube.com/@tachesteaches - inspiration
-- https://claude.ai - patience 
+
